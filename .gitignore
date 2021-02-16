@@ -1,0 +1,22 @@
+.DS_store
+
+# data
+psl-datasets/movielens/data/movielens
+psl-datasets/movielens/data/ml-1m
+
+# Intellij meta data
+.idea
+
+# Python and Jupyter Files
+*_pycache_*
+.ipynb_checkpoints
+
+# Results
+results
+learn_out.err
+learn_out.txt
+
+# PSL resources
+*.jar
+!psl_resources/psl-cli-2.3.0-SNAPSHOT.jar
+

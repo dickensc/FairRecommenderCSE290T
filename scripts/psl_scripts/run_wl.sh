@@ -12,8 +12,6 @@ readonly SUPPORTED_EXAMPLES='movielens'
 readonly STRING_IDS='FairPSL'
 
 # Standard options for all examples and models
-# note that this is assuming that we are only using datasets that have int-ids
-# todo: (Charles D.) break this assumption
 readonly POSTGRES_DB='psl'
 readonly STANDARD_PSL_OPTIONS="--postgres ${POSTGRES_DB}"
 # Random Seed option
@@ -36,8 +34,8 @@ WEIGHT_LEARNING_METHODS[UNIFORM]=''
 # Options specific to each method (missing keys yield empty strings).
 declare -A WEIGHT_LEARNING_METHOD_OPTIONS
 WEIGHT_LEARNING_METHOD_OPTIONS[BOWLOS]='-D admmreasoner.initialconsensusvalue=ZERO -D gppker.reldep=1 -D gpp.explore=1 -D gpp.maxiterations=50 -D gppker.space=OS -D gpp.initialweightstd=0.5 -D gpp.initialweightvalue=0.5'
-WEIGHT_LEARNING_METHOD_OPTIONS[BOWLSS]='-D admmreasoner.initialconsensusvalue=ZERO -D gppker.reldep=1 -D gpp.explore=1 -D gpp.maxiterations=25 -D gppker.space=SS -D gpp.initialweightstd=0.5 -D gpp.initialweightvalue=0.5'
-WEIGHT_LEARNING_METHOD_OPTIONS[CRGS]='-D admmreasoner.initialconsensusvalue=ZERO -D continuousrandomgridsearch.maxlocations=25'
+WEIGHT_LEARNING_METHOD_OPTIONS[BOWLSS]='-D admmreasoner.initialconsensusvalue=ZERO -D gppker.reldep=1 -D gpp.explore=1 -D gpp.maxiterations=50 -D gppker.space=SS -D gpp.initialweightstd=0.5 -D gpp.initialweightvalue=0.5'
+WEIGHT_LEARNING_METHOD_OPTIONS[CRGS]='-D admmreasoner.initialconsensusvalue=ZERO -D continuousrandomgridsearch.maxlocations=50'
 WEIGHT_LEARNING_METHOD_OPTIONS[HB]='-D admmreasoner.initialconsensusvalue=ZERO'
 WEIGHT_LEARNING_METHOD_OPTIONS[RGS]='-D admmreasoner.initialconsensusvalue=ZERO -D randomgridsearch.maxlocations=50'
 WEIGHT_LEARNING_METHOD_OPTIONS[LME]='-D admmreasoner.initialconsensusvalue=ZERO -D frankwolfe.maxiter=100 -D weightlearning.randomweights=true'

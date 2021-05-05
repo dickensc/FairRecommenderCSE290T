@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 import sys
 import os
-import subprocess
 
 # generic helpers
 from helpers import frameLoader
@@ -22,6 +21,8 @@ from evaluators import evaluate_over_estimation
 from evaluators import evaluate_under_estimation
 from evaluators import evaluate_absolute
 from evaluators import evaluate_mutual_information
+from evaluators import evaluate_mrr
+from evaluators import evaluate_ndcg
 
 DATASET_PROPERTIES = {
     'movielens': {'evaluation_predicate': 'rating'}
@@ -31,7 +32,7 @@ EVALUATOR_NAME_TO_METHOD = {
     'Categorical': evaluate_accuracy,
     'Discrete': evaluate_f1,
     'Continuous': evaluate_rmse,
-    'Ranking': evaluate_roc_auc_score
+    'Ranking': evaluate_ndcg
 }
 
 FAIRNESS_NAME_TO_EVALUATOR = {
@@ -140,9 +141,9 @@ def calculate_experiment_performance(method, dataset, wl_method, evaluator, fold
         experiment_performance = np.append(experiment_performance, EVALUATOR_NAME_TO_METHOD[evaluator](
             predicted_df, truth_df, observed_df, target_df, user_df))
 
-        for metric in FAIRNESS_NAME_TO_EVALUATOR.keys():
-            experiment_fairness[metric] = np.append(experiment_fairness[metric], FAIRNESS_NAME_TO_EVALUATOR[metric](
-                predicted_df, truth_df, observed_df, target_df, user_df))
+        # for metric in FAIRNESS_NAME_TO_EVALUATOR.keys():
+        #     experiment_fairness[metric] = np.append(experiment_fairness[metric], FAIRNESS_NAME_TO_EVALUATOR[metric](
+        #         predicted_df, truth_df, observed_df, target_df, user_df))
 
     # organize into a performance_series
     # TODO(Charles): *5 is for movielens
@@ -152,15 +153,17 @@ def calculate_experiment_performance(method, dataset, wl_method, evaluator, fold
     performance_series['Fairness_Model'] = model
     performance_series['Fairness_Regularizer'] = weight
     performance_series['Evaluation_Method'] = evaluator
-    performance_series['Evaluator_Mean'] = experiment_performance.mean() * 5
-    performance_series['Evaluator_Standard_Deviation'] = experiment_performance.std() * 5
-    for metric in FAIRNESS_NAME_TO_EVALUATOR.keys():
-        if (metric != 'mutual_information'):
-            performance_series[metric + '_Mean'] = experiment_fairness[metric].mean() * 5
-            performance_series[metric + '_Standard_Deviation'] = experiment_fairness[metric].std() * 5
-        else:
-            performance_series[metric + '_Mean'] = experiment_fairness[metric].mean()
-            performance_series[metric + '_Standard_Deviation'] = experiment_fairness[metric].std()
+    # performance_series['Evaluator_Mean'] = experiment_performance.mean() * 5
+    # performance_series['Evaluator_Standard_Deviation'] = experiment_performance.std() * 5
+    performance_series['Evaluator_Mean'] = experiment_performance.mean()
+    performance_series['Evaluator_Standard_Deviation'] = experiment_performance.std()
+    # for metric in FAIRNESS_NAME_TO_EVALUATOR.keys():
+    #     if (metric != 'mutual_information'):
+    #         performance_series[metric + '_Mean'] = experiment_fairness[metric].mean() * 5
+    #         performance_series[metric + '_Standard_Deviation'] = experiment_fairness[metric].std() * 5
+    #     else:
+    #         performance_series[metric + '_Mean'] = experiment_fairness[metric].mean()
+    #         performance_series[metric + '_Standard_Deviation'] = experiment_fairness[metric].std()
 
     return performance_series
 

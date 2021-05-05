@@ -5,6 +5,7 @@ import os
 from helpers import standardize_ratings
 
 from predicate_constructors.base_model_predicates.ratings import ratings_predicate
+from predicate_constructors.base_model_predicates.rankings import rankings_predicate
 from predicate_constructors.base_model_predicates.rated import rated_predicate
 from predicate_constructors.base_model_predicates.item import item_predicate
 from predicate_constructors.base_model_predicates.user import user_predicate
@@ -68,29 +69,29 @@ def construct_movielens_predicates():
             enumerate(zip(observed_ratings_df_list, train_ratings_df_list, test_ratings_df_list)):
 
         # Standardized
-        # # Learn
-        # standardized_observed_ratings_df, standardized_truth_ratings_df = standardize_ratings(observed_ratings_df,
-        #                                                                                       train_ratings_df)
-        # write_predicates(standardized_observed_ratings_df, standardized_truth_ratings_df,
-        #                  user_df, movies_df, 'learn', fold)
-        #
-        # # Eval
-        # standardized_observed_ratings_df, standardized_truth_ratings_df = standardize_ratings(
-        #     observed_ratings_df.append(train_ratings_df, verify_integrity=True), test_ratings_df)
-        # write_predicates(standardized_observed_ratings_df, standardized_truth_ratings_df,
-        #                  user_df, movies_df, 'eval', fold)
-
-        # Un-standardized
-        print("Fold: {} train predicates".format(fold))
         # Learn
-        write_predicates(observed_ratings_df, train_ratings_df,
+        standardized_observed_ratings_df, standardized_truth_ratings_df = standardize_ratings(observed_ratings_df,
+                                                                                              train_ratings_df)
+        write_predicates(standardized_observed_ratings_df, standardized_truth_ratings_df,
                          user_df, movies_df, 'learn', fold)
 
-        print("Fold: {} eval predicates".format(fold))
-        print("Test Size: {}".format(test_ratings_df.shape[0]))
         # Eval
-        write_predicates(observed_ratings_df.append(train_ratings_df, verify_integrity=True), test_ratings_df,
+        standardized_observed_ratings_df, standardized_truth_ratings_df = standardize_ratings(
+            observed_ratings_df.append(train_ratings_df, verify_integrity=True), test_ratings_df)
+        write_predicates(standardized_observed_ratings_df, standardized_truth_ratings_df,
                          user_df, movies_df, 'eval', fold)
+
+        # # Un-standardized
+        # print("Fold: {} train predicates".format(fold))
+        # # Learn
+        # write_predicates(observed_ratings_df, train_ratings_df,
+        #                  user_df, movies_df, 'learn', fold)
+        #
+        # print("Fold: {} eval predicates".format(fold))
+        # print("Test Size: {}".format(test_ratings_df.shape[0]))
+        # # Eval
+        # write_predicates(observed_ratings_df.append(train_ratings_df, verify_integrity=True), test_ratings_df,
+        #                  user_df, movies_df, 'eval', fold)
 
 
 def write_predicates(observed_ratings_df, truth_ratings_df, user_df, movies_df, phase, fold):
@@ -106,9 +107,12 @@ def write_predicates(observed_ratings_df, truth_ratings_df, user_df, movies_df, 
     ratings_predicate(truth_ratings_df, partition='targets', fold=str(fold), phase=phase, write_value=False)
     ratings_predicate(truth_ratings_df, partition='truth', fold=str(fold), phase=phase, write_value=True)
 
+    rankings_predicate(pd.concat([observed_ratings_df, truth_ratings_df]), partition='targets', fold=str(fold),
+                       phase=phase, write_value=False)
+
     nmf_ratings_predicate(observed_ratings_df, truth_ratings_df, fold=str(fold), phase=phase)
     svd_ratings_predicate(observed_ratings_df, truth_ratings_df, fold=str(fold), phase=phase)
-    nb_ratings_predicate(observed_ratings_df, truth_ratings_df, user_df, movies_df, fold=str(fold), phase=phase)
+    # nb_ratings_predicate(observed_ratings_df, truth_ratings_df, user_df, movies_df, fold=str(fold), phase=phase)
 
     average_item_rating_predicate(observed_ratings_df, fold=str(fold), phase=phase)
     average_user_rating_predicate(observed_ratings_df, fold=str(fold), phase=phase)

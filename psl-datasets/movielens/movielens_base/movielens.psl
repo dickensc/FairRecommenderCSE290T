@@ -19,13 +19,6 @@
 1.0 : nb_rating(U, I) & target(U, I) >> rating(U, I)^2
 1.0 : rating(U, I) & target(U, I) >> nb_rating(U, I)^2
 
-// Mean-Centering
-1.0 : avg_user_rating(U) & target(U,I) >> rating(U, I)^2
-1.0 : rating(U, I) & target(U,I) >> avg_user_rating(U)^2
-
-1.0 : avg_item_rating(I) & target(U,I) >> rating(U, I)^2
-1.0 : rating(U, I) & target(U,I) >> avg_item_rating(I)^2
-
 // Priors
 1.0 : rating(U, I) = 1.0 ^2
 1.0 : ~rating(U, I) ^2

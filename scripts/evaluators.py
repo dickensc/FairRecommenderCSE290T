@@ -2,8 +2,66 @@ from sklearn.metrics import mean_squared_error
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import f1_score
 from sklearn.metrics import roc_auc_score
+from sklearn.metrics import ndcg_score
 
 import numpy as np
+
+
+def evaluate_ndcg(predicted_df, truth_df, observed_df, target_df, user_df, max_rank=20):
+    # consider overlap between observed and truths if there is observed truths.
+    complete_predictions = observed_df.append(predicted_df)
+    complete_predictions = complete_predictions.loc[~complete_predictions.index.duplicated(keep='first')]
+
+    # evaluator indices.
+    evaluator_indices = truth_df.index.intersection(target_df.index)
+
+    # Join predicted_df and truth_df on the arguments.
+    experiment_frame = truth_df.loc[evaluator_indices].join(complete_predictions, how="left",
+                                                            lsuffix='_truth', rsuffix='_predicted')
+
+    # Calculate Mean NDCG.
+    MNDCG = 0
+    n_queries = 0
+    for user_id in experiment_frame.index.get_level_values(0).unique():
+        truth_ratings = experiment_frame.loc[user_id].val_truth
+        predicted_ratings = experiment_frame.loc[user_id].val_predicted.loc[truth_ratings.index]
+        MNDCG = ndcg_score([truth_ratings.values], [predicted_ratings.values], k=20)
+        n_queries += 1
+
+    return MNDCG / n_queries
+
+
+def evaluate_mrr(predicted_df, truth_df, observed_df, target_df, user_df, relevance_thresh=0.75, max_rank=20):
+    # consider overlap between observed and truths if there is observed truths.
+    complete_predictions = observed_df.append(predicted_df)
+    complete_predictions = complete_predictions.loc[~complete_predictions.index.duplicated(keep='first')]
+
+    # evaluator indices.
+    evaluator_indices = truth_df.index.intersection(target_df.index)
+
+    # Join predicted_df and truth_df on the arguments.
+    experiment_frame = truth_df.loc[evaluator_indices].join(complete_predictions, how="left",
+                                                            lsuffix='_truth', rsuffix='_predicted')
+
+    # Calculate MRR.
+    mrr = 0
+    n_queries = 0
+    for user_id in experiment_frame.index.get_level_values(0).unique():
+        truth_ratings = experiment_frame.loc[user_id].val_truth
+        predicted_ratings = experiment_frame.loc[user_id].val_predicted.sort_values()
+
+        # Find the rank of the first relevant item.
+        rank = 0
+        while truth_ratings.loc[predicted_ratings.index[rank]] < relevance_thresh:
+            rank += 1
+            if rank == max_rank or rank == predicted_ratings.shape[0]:
+                break
+
+        # Update MRR and query count.
+        mrr += (1 / (rank + 1))
+        n_queries += 1
+
+    return mrr / n_queries
 
 
 def evaluate_rmse(predicted_df, truth_df, observed_df, target_df, user_df):

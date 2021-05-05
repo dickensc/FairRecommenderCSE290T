@@ -34,4 +34,5 @@
 // Non parity minimizes the absolute difference between the overall average.
 rating(+U, +I) / DENOMINATOR_1 = group1_avg_rating(c) . {U: group_1(U)} {I: group_1_item_block(I) & target(U,I)}
 rating(+U, +I) / DENOMINATOR_2 = group2_avg_rating(c) . {U: group_2(U)} {I: group_2_item_block(I) & target(U,I)}
-1.0 : group1_avg_rating(c) = group2_avg_rating(c)
+group1_avg_rating(c) - group2_avg_rating(c) < TAU .
+group1_avg_rating(c) - group2_avg_rating(c) > TAU .

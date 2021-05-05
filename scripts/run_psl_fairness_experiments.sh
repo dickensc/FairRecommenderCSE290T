@@ -9,16 +9,15 @@ readonly BASE_OUT_DIR="${BASE_DIR}/results/fairness"
 
 readonly STUDY_NAME='fairness_study'
 
-#readonly FAIRNESS_MODELS='base non_parity value non_parity_value nb nmf non_parity_nmf_retro_fit value_nmf_retro_fit mutual_information'
-readonly FAIRNESS_MODELS='mutual_information'
-#readonly FAIRNESS_WEIGHTS='LEARNED 0.00001 0.0001 0.001 0.01 0.1 1.0 10.0 100.0 1000.0 10000.0 100000.0 1000000.0 10000000.0'
-readonly FAIRNESS_WEIGHTS='1000000.0 10000000.0'
+#readonly FAIRNESS_MODELS='base rank non_parity value non_parity_value nb nmf non_parity_nmf_retro_fit value_nmf_retro_fit mutual_information'
+readonly FAIRNESS_MODELS='rank'
+readonly FAIRNESS_WEIGHTS='LEARNED 0.00001 0.0001 0.001 0.01 0.1 1.0 10.0 100.0 1000.0 10000.0 100000.0 1000000.0 10000000.0'
 readonly WL_METHODS='UNIFORM'
 readonly SEED=4
 readonly TRACE_LEVEL='TRACE'
 
 readonly SUPPORTED_DATASETS='movielens'
-readonly SUPPORTED_FAIRNESS_MODELS='base non_parity value non_parity_value nmf nb non_parity_nmf_retro_fit value_nmf_retro_fit mutual_information'
+readonly SUPPORTED_FAIRNESS_MODELS='base rank non_parity value non_parity_value nmf nb non_parity_nmf_retro_fit value_nmf_retro_fit mutual_information'
 
 # Evaluators to be use for each example
 declare -A DATASET_EVALUATORS
@@ -27,6 +26,7 @@ DATASET_EVALUATORS[movielens]='Continuous'
 # Weight support by fairness model
 declare -A SUPPORTED_FAIR_WEIGHTS
 SUPPORTED_FAIR_WEIGHTS[base]='LEARNED'
+SUPPORTED_FAIR_WEIGHTS[rank]='LEARNED'
 SUPPORTED_FAIR_WEIGHTS[non_parity]='LEARNED'
 SUPPORTED_FAIR_WEIGHTS[value]='LEARNED'
 SUPPORTED_FAIR_WEIGHTS[non_parity_value]='LEARNED'
@@ -38,19 +38,19 @@ SUPPORTED_FAIR_WEIGHTS[value_nmf_retro_fit]='0.00001 0.0001 0.001 0.01 0.1 1.0 1
 
 # Fair weight learning rate
 declare -A LEARNING_RATES
-LEARNING_RATES['LEARNED']='-D sgd.learningrate=1.0'
-LEARNING_RATES['0.00001']='-D sgd.learningrate=1.0'
-LEARNING_RATES['0.0001']='-D sgd.learningrate=1.0'
-LEARNING_RATES['0.001']='-D sgd.learningrate=1.0'
-LEARNING_RATES['0.01']='-D sgd.learningrate=10.0'
-LEARNING_RATES['0.1']='-D sgd.learningrate=10.0'
-LEARNING_RATES['1.0']='-D sgd.learningrate=10.0'
-LEARNING_RATES['10.0']='-D sgd.learningrate=100.0'
-LEARNING_RATES['100.0']='-D sgd.learningrate=100.0'
-LEARNING_RATES['1000.0']='-D sgd.learningrate=100.0'
-LEARNING_RATES['10000.0']='-D sgd.learningrate=1000.0'
-LEARNING_RATES['100000.0']='-D sgd.learningrate=1000.0'
-LEARNING_RATES['1000000.0']='-D sgd.learningrate=10000.0'
+LEARNING_RATES['LEARNED']='-D sgd.learningrate=1.0 -D reasoner.tolerance=1e-5f'
+LEARNING_RATES['0.00001']='-D sgd.learningrate=1.0 -D reasoner.tolerance=1e-5f'
+LEARNING_RATES['0.0001']='-D sgd.learningrate=1.0 -D reasoner.tolerance=1e-5f'
+LEARNING_RATES['0.001']='-D sgd.learningrate=1.0 -D reasoner.tolerance=1e-5f'
+LEARNING_RATES['0.01']='-D sgd.learningrate=10.0 -D reasoner.tolerance=1e-5f'
+LEARNING_RATES['0.1']='-D sgd.learningrate=10.0 -D reasoner.tolerance=1e-5f'
+LEARNING_RATES['1.0']='-D sgd.learningrate=10.0 -D reasoner.tolerance=1e-5f'
+LEARNING_RATES['10.0']='-D sgd.learningrate=100.0 -D reasoner.tolerance=1e-5f'
+LEARNING_RATES['100.0']='-D sgd.learningrate=100.0 -D reasoner.tolerance=1e-8f'
+LEARNING_RATES['1000.0']='-D sgd.learningrate=100.0 -D reasoner.tolerance=1e-8f'
+LEARNING_RATES['10000.0']='-D sgd.learningrate=1000.0 -D reasoner.tolerance=1e-8f'
+LEARNING_RATES['100000.0']='-D sgd.learningrate=1000.0 -D reasoner.tolerance=1e-8f'
+LEARNING_RATES['1000000.0']='-D sgd.learningrate=10000.0 -D reasoner.tolerance=1e-8f'
 LEARNING_RATES['10000000.0']='-D sgd.learningrate=10000.0 -D reasoner.tolerance=1e-15f'
 
 # Evaluators to be use for each example

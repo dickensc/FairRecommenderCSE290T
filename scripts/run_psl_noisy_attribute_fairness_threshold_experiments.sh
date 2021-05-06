@@ -13,7 +13,6 @@ readonly SUPPORTED_FAIRNESS_MODELS='base rank non_parity value non_parity_value 
 
 #readonly FAIRNESS_MODELS='base rank non_parity value non_parity_value nb nmf non_parity_nmf_retro_fit value_nmf_retro_fit mutual_information'
 readonly FAIRNESS_MODELS='non_parity'
-readonly NOISE_MODELS='clean corrupted1 corrupted1'
 declare -A FAIRNESS_THRESHOLDS
 FAIRNESS_THRESHOLDS['non_parity']='0.002 0.004 0.006 0.008 0.010 0.012 0.014 0.016 0.018 0.020 0.022 0.024 0.026 0.028 0.030'
 
@@ -155,8 +154,8 @@ function write_fairness_threshold() {
             elif [[ ${fairness_model} == 'mutual_information' ]]; then
               rule="@MI\[rating\(\+U1, I\), group_member\(\+U2, \+G\)\] \{U1: rated\(U1, I\)\}"
             fi
-            sed -i -r "s/^${rule} < TAU .|${rule} < [0-9]+.[0-9]+ ./${rule} < ${fairness_threshold} ./g"  "${example_name}-learned.psl"
-            sed -i -r "s/^${rule} > TAU .|${rule} > [0-9]+.[0-9]+ ./${rule} > ${fairness_threshold} ./g"  "${example_name}-learned.psl"
+            sed -i -r "s/^${rule} < TAU .|${rule} < [0-9]+.[0-9]+ ./${rule} < ${fairness_threshold} ./g"  "${example_name}.psl"
+            sed -i -r "s/^${rule} > TAU .|${rule} > [0-9]+.[0-9]+ ./${rule} > ${fairness_threshold} ./g"  "${example_name}.psl"
           else
             if [[ ${fairness_model} == 'non_parity' || ${fairness_model} == 'non_parity_nmf_retro_fit' ]]; then
               rule="1.0 \* GROUP1_AVG_RATING\(c\) \+ -1.0 \* GROUP2_AVG_RATING\(c\) = 0.0"
@@ -168,8 +167,8 @@ function write_fairness_threshold() {
             elif [[ ${fairness_model} == 'mutual_information' ]]; then
               rule="@MI\[rating\(\+U1, I\), group_member\(\+U2, \+G\)\] \{U1: rated\(U1, I\)\}"
             fi
-            sed -i -r "s/^${rule} < TAU .|${rule} < [0-9]+.[0-9]+ ./${rule} < ${fairness_threshold} ./g"  "${example_name}-learned.psl"
-            sed -i -r "s/^${rule} > TAU .|${rule} > [0-9]+.[0-9]+ ./${rule} > ${fairness_threshold} ./g"  "${example_name}-learned.psl"
+            sed -i -r "s/^${rule} < TAU .|${rule} < [0-9]+.[0-9]+ ./${rule} < ${fairness_threshold} ./g"  "${example_name}.psl"
+            sed -i -r "s/^${rule} > TAU .|${rule} > [0-9]+.[0-9]+ ./${rule} > ${fairness_threshold} ./g"  "${example_name}.psl"
           fi
         fi
 

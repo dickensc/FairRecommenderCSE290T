@@ -10,7 +10,7 @@ function main() {
     # dataset paths to pass to scripts
     dataset_paths=''
     for dataset in $DATASETS; do
-        dataset_paths="${dataset_paths}psl-datasets/${dataset} "
+        dataset_paths="${dataset} "
     done
 
     # PSL Experiments
@@ -23,7 +23,7 @@ function main() {
     pushd . > /dev/null
         cd "./scripts" || exit
         # shellcheck disable=SC2086
-        ./run_psl_fairness_experiments.sh ${dataset_paths}
+        ./run_psl_noisy_attribute_fairness_threshold_experiments.sh ${dataset_paths}
     popd > /dev/null
 
     echo "Running FairPSL experiments on datasets: [${DATASETS}]."

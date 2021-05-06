@@ -13,6 +13,7 @@ readonly SUPPORTED_FAIRNESS_MODELS='base rank non_parity value non_parity_value 
 
 #readonly FAIRNESS_MODELS='base rank non_parity value non_parity_value nb nmf non_parity_nmf_retro_fit value_nmf_retro_fit mutual_information'
 readonly FAIRNESS_MODELS='non_parity'
+readonly NOISE_MODELS='clean corrupted1 corrupted1'
 declare -A FAIRNESS_THRESHOLDS
 FAIRNESS_THRESHOLDS['non_parity']='0.002 0.004 0.006 0.008 0.010 0.012 0.014 0.016 0.018 0.020 0.022 0.024 0.026 0.028 0.030'
 
@@ -31,19 +32,16 @@ declare -A DATASET_FOLDS
 DATASET_FOLDS[movielens]=5
 
 function run_example() {
-    local example_directory=$1
+    local example_name=$1
     local wl_method=$2
     local fairness_model=$3
     local fold=$4
     local fair_threshold=$5
     local evaluator=$6
 
-    local example_name
-    example_name=$(basename "${example_directory}")
-
     echo "Running example ${example_name} : ${fairness_model} : ${fold} : ${wl_method} : tau=${fair_threshold}"
 
-    local cli_directory="${BASE_DIR}/${example_directory}/cli"
+    local cli_directory="${BASE_DIR}/psl-datasets/${example_name}/cli"
 
     out_directory="${BASE_OUT_DIR}/psl/${STUDY_NAME}/${example_name}/${wl_method}/${evaluator}/${fairness_model}/${fair_threshold}"/${fold}
 
@@ -51,7 +49,7 @@ function run_example() {
     [[ -d "$out_directory" ]] || mkdir -p "$out_directory"
 
     # Setup experiment cli and data directory
-    setup_fairness_experiment "${example_directory}" "${fairness_model}" "${cli_directory}"
+    setup_fairness_experiment "${example_name}" "${fairness_model}" "${cli_directory}"
 
     # Write the fairness weight
     write_fairness_threshold "$fair_threshold" "$fairness_model" "$example_name" "$wl_method" "$cli_directory"
@@ -66,16 +64,11 @@ function run_example() {
 }
 
 function setup_fairness_experiment() {
-      local example_directory=$1
+      local example_name=$1
       local fairness_model=$2
       local cli_directory=$3
 
-      local example_name
-      example_name=$(basename "${example_directory}")
-
-      local fairness_model_directory="${BASE_DIR}/${example_directory}/${example_name}_${fairness_model}"
-      echo "fairness_model_directory"
-      echo "$fairness_model_directory"
+      local fairness_model_directory="${BASE_DIR}/psl-datasets/${example_name}/${example_name}_${fairness_model}"
 
       # copy the .data and .psl files into the cli directory
       cp "${fairness_model_directory}/${example_name}.psl" "${cli_directory}/${example_name}.psl"
@@ -151,7 +144,7 @@ function write_fairness_threshold() {
 
         if [[ ${fairness_model} != 'base' ]]; then
           if [[ ${wl_method} == 'UNIFORM' ]]; then
-            # set the fairness related constraint threshollds in the learned file to the fairness_threshold value and write to learned.psl file
+            # set the fairness related constraint thresholds in the learned file to the fairness_threshold value and write to learned.psl file
             if [[ ${fairness_model} == 'non_parity' || ${fairness_model} == 'non_parity_nmf_retro_fit' ]]; then
               rule="group1_avg_rating\(c\) - group2_avg_rating\(c\)"
             elif [[ ${fairness_model} == 'value' || ${fairness_model} == 'value_nmf_retro_fit' ]]; then
@@ -175,9 +168,8 @@ function write_fairness_threshold() {
             elif [[ ${fairness_model} == 'mutual_information' ]]; then
               rule="@MI\[rating\(\+U1, I\), group_member\(\+U2, \+G\)\] \{U1: rated\(U1, I\)\}"
             fi
-
-            sed -i -r "s/^${rule} < TAU|${rule} < [0-9]+.[0-9]+ ./${rule} < ${fairness_threshold} ./g"  "${example_name}-learned.psl"
-            sed -i -r "s/^${rule} > TAU|${rule} > [0-9]+.[0-9]+ ./${rule} > ${fairness_threshold} ./g"  "${example_name}-learned.psl"
+            sed -i -r "s/^${rule} < TAU .|${rule} < [0-9]+.[0-9]+ ./${rule} < ${fairness_threshold} ./g"  "${example_name}-learned.psl"
+            sed -i -r "s/^${rule} > TAU .|${rule} > [0-9]+.[0-9]+ ./${rule} > ${fairness_threshold} ./g"  "${example_name}-learned.psl"
           fi
         fi
 
@@ -192,10 +184,7 @@ function main() {
         exit 1
     fi
 
-    local example_name
-    example_name=$(basename "${example_directory}")
-
-    for example_directory in "$@"; do
+    for example_name in "$@"; do
       for wl_method in ${WL_METHODS}; do
         for fairness_model in ${FAIRNESS_MODELS}; do
           for fair_threshold in ${FAIRNESS_THRESHOLDS[${fairness_model}]}; do
@@ -203,7 +192,7 @@ function main() {
               for ((fold=0; fold<${DATASET_FOLDS[${example_name}]}; fold++)) do
                 if [[ "${SUPPORTED_DATASETS}" == *"${example_name}"* ]]; then
                   if [[ "${SUPPORTED_FAIRNESS_MODELS}" == *"${fairness_model}"* ]]; then
-                    run_example "${example_directory}" "${wl_method}" "${fairness_model}" "${fold}" "${fair_threshold}" "${evaluator}"
+                    run_example "${example_name}" "${wl_method}" "${fairness_model}" "${fold}" "${fair_threshold}" "${evaluator}"
                   fi
                  fi
               done

@@ -16,14 +16,6 @@ readonly STRING_IDS='FairPSL'
 readonly POSTGRES_DB='psl'
 readonly STANDARD_PSL_OPTIONS="--postgres ${POSTGRES_DB} -D log4j.threshold=TRACE"
 
-# Options specific to each example (missing keys yield empty strings).
-declare -A EXAMPLE_OPTIONS
-EXAMPLE_OPTIONS[citeseer]='-D categoricalevaluator.defaultpredicate=hasCat'
-EXAMPLE_OPTIONS[cora]='-D categoricalevaluator.defaultpredicate=hasCat'
-EXAMPLE_OPTIONS[epinions]=''
-EXAMPLE_OPTIONS[jester]=''
-EXAMPLE_OPTIONS[lastfm]=''
-
 # Options specific to each model (missing keys yield empty strings).
 declare -A MODEL_OPTIONS
 MODEL_OPTIONS[base]='-D sgd.maxiterations=500'
@@ -166,7 +158,7 @@ function modify_run_script_options() {
     local int_ids_options=''
     # Check for int ids.
     if [[ "${STRING_IDS}" != *"${fairness_model}"* ]]; then
-        int_ids_options="--int-ids ${int_ids_options}"
+        int_ids_options="--int-ids"
     fi
 
     pushd . > /dev/null
@@ -176,7 +168,7 @@ function modify_run_script_options() {
         sed -i "s/^readonly ADDITIONAL_PSL_OPTIONS='.*'$/readonly ADDITIONAL_PSL_OPTIONS='${int_ids_options} ${STANDARD_PSL_OPTIONS}'/" run.sh
 
         # set the ADDITIONAL_EVAL_OPTIONS
-        sed -i "s/^readonly ADDITIONAL_EVAL_OPTIONS='.*'$/readonly ADDITIONAL_EVAL_OPTIONS='--infer SGDInference ${MODEL_OPTIONS[${fairness_model}]} --eval org.linqs.psl.evaluation.statistics.${objective}Evaluator ${EXAMPLE_OPTIONS[${example_name}]}'/" run.sh
+        sed -i "s/^readonly ADDITIONAL_EVAL_OPTIONS='.*'$/readonly ADDITIONAL_EVAL_OPTIONS='--infer SGDInference ${MODEL_OPTIONS[${fairness_model}]} --eval org.linqs.psl.evaluation.statistics.${objective}Evaluator'/" run.sh
     popd > /dev/null
 }
 

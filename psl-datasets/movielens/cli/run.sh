@@ -28,7 +28,7 @@ function main() {
    # fetch_psl
 
    # Run PSL
-   # runWeightLearning "$@"
+   runWeightLearning "$@"
    runEvaluation "$@"
 }
 

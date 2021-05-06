@@ -154,8 +154,8 @@ function write_fairness_threshold() {
             elif [[ ${fairness_model} == 'mutual_information' ]]; then
               rule="@MI\[rating\(\+U1, I\), group_member\(\+U2, \+G\)\] \{U1: rated\(U1, I\)\}"
             fi
-            sed -i -r "s/^${rule} < TAU .|${rule} < [0-9]+.[0-9]+ ./${rule} < ${fairness_threshold} ./g"  "${example_name}.psl"
-            sed -i -r "s/^${rule} > TAU .|${rule} > [0-9]+.[0-9]+ ./${rule} > ${fairness_threshold} ./g"  "${example_name}.psl"
+            sed -i -r "s/^${rule} <= TAU .|${rule} <= [0-9]+.[0-9]+ ./${rule} <= ${fairness_threshold} ./g"  "${example_name}.psl"
+            sed -i -r "s/^${rule} >= TAU .|${rule} >= [0-9]+.[0-9]+ ./${rule} >= ${fairness_threshold} ./g"  "${example_name}.psl"
           else
             if [[ ${fairness_model} == 'non_parity' || ${fairness_model} == 'non_parity_nmf_retro_fit' ]]; then
               rule="1.0 \* GROUP1_AVG_RATING\(c\) \+ -1.0 \* GROUP2_AVG_RATING\(c\) = 0.0"
@@ -167,8 +167,8 @@ function write_fairness_threshold() {
             elif [[ ${fairness_model} == 'mutual_information' ]]; then
               rule="@MI\[rating\(\+U1, I\), group_member\(\+U2, \+G\)\] \{U1: rated\(U1, I\)\}"
             fi
-            sed -i -r "s/^${rule} < TAU .|${rule} < [0-9]+.[0-9]+ ./${rule} < ${fairness_threshold} ./g"  "${example_name}.psl"
-            sed -i -r "s/^${rule} > TAU .|${rule} > [0-9]+.[0-9]+ ./${rule} > ${fairness_threshold} ./g"  "${example_name}.psl"
+            sed -i -r "s/^${rule} <= TAU .|${rule} <= [0-9]+.[0-9]+ ./${rule} <= ${fairness_threshold} ./g"  "${example_name}.psl"
+            sed -i -r "s/^${rule} >= TAU .|${rule} >= [0-9]+.[0-9]+ ./${rule} >= ${fairness_threshold} ./g"  "${example_name}.psl"
           fi
         fi
 

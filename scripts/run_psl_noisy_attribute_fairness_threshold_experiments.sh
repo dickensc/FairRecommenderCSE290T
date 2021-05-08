@@ -8,8 +8,10 @@ readonly BASE_DIR="${THIS_DIR}/.."
 readonly BASE_OUT_DIR="${BASE_DIR}/results/fairness"
 
 readonly STUDY_NAME='noisy_attribute_fairness_threshold_study'
-readonly SUPPORTED_DATASETS='movielens'
+readonly SUPPORTED_DATASETS='movielens movielens_corrupt'
 readonly SUPPORTED_FAIRNESS_MODELS='base rank non_parity value non_parity_value nmf nb non_parity_nmf_retro_fit value_nmf_retro_fit mutual_information'
+
+readonly DATASETS=('movielens' 'movielens_corrupt')
 
 #readonly FAIRNESS_MODELS='base rank non_parity value non_parity_value nb nmf non_parity_nmf_retro_fit value_nmf_retro_fit mutual_information'
 readonly FAIRNESS_MODELS='non_parity'
@@ -178,12 +180,13 @@ function write_fairness_threshold() {
 function main() {
     trap exit SIGINT
 
-    if [[ $# -eq 0 ]]; then
-        echo "USAGE: $0 <example dir> ..."
-        exit 1
-    fi
+    # if [[ $# -eq 0 ]]; then
+    #     echo "USAGE: $0 <example dir> ..."
+    #     exit 1
+    # fi
 
-    for example_name in "$@"; do
+    for example_name in ${DATASETS[@]}; do
+      echo "${example_name}";
       for wl_method in ${WL_METHODS}; do
         for fairness_model in ${FAIRNESS_MODELS}; do
           for fair_threshold in ${FAIRNESS_THRESHOLDS[${fairness_model}]}; do
@@ -204,4 +207,4 @@ function main() {
     return 0
 }
 
-main "$@"
+main #"$@"

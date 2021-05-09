@@ -12,6 +12,7 @@ readonly SUPPORTED_DATASETS='movielens'
 readonly SUPPORTED_FAIRNESS_MODELS='base rank non_parity value non_parity_value nmf nb non_parity_nmf_retro_fit value_nmf_retro_fit mutual_information'
 
 #readonly FAIRNESS_MODELS='base rank non_parity value non_parity_value nb nmf non_parity_nmf_retro_fit value_nmf_retro_fit mutual_information'
+readonly NOISE_MODELS='clean corrrupted1 corrrupted1 corrrupted1'
 readonly FAIRNESS_MODELS='non_parity'
 declare -A FAIRNESS_THRESHOLDS
 FAIRNESS_THRESHOLDS['non_parity']='0.002 0.004 0.006 0.008 0.010 0.012 0.014 0.016 0.018 0.020 0.022 0.024 0.026 0.028 0.030'
@@ -24,7 +25,7 @@ readonly TRACE_LEVEL='TRACE'
 declare -A DATASET_EVALUATORS
 DATASET_EVALUATORS[movielens]='Continuous AUC'
 
-readonly STANDARD_OPTIONS='-D reasoner.tolerance=1.0e-5f -D inference.relax.squared=false -D inference.normalize=false -D weightlearning.inference=SGDInference -D sgd.extension=ADAM -D sgd.inversescaleexp=2.0'
+readonly STANDARD_OPTIONS='-D reasoner.tolerance=1.0e-5f -D inference.relax.squared=false -D inference.normalize=false -D weightlearning.inference=SGDInference'
 
 # Evaluators to be use for each example
 declare -A DATASET_FOLDS
@@ -34,6 +35,7 @@ function run_example() {
     local example_name=$1
     local wl_method=$2
     local fairness_model=$3
+    local noise_model=$3
     local fold=$4
     local fair_threshold=$5
     local evaluator=$6
@@ -54,10 +56,10 @@ function run_example() {
     write_fairness_threshold "$fair_threshold" "$fairness_model" "$example_name" "$wl_method" "$cli_directory"
 
     ##### WEIGHT LEARNING #####
-    run_weight_learning "${example_name}" "${evaluator}" "${wl_method}" "${fairness_model}" "${fair_threshold}" "${fold}" "${cli_directory}" "${out_directory}"
+    run_weight_learning "${example_name}" "${evaluator}" "${wl_method}" "${fairness_model}" "${fair_threshold}" "${fold}" "${cli_directory}" "${out_directory}" ${STANDARD_OPTIONS}
 
     ##### EVALUATION #####
-    run_evaluation "${example_name}" "${evaluator}" "${fairness_model}" "${fair_threshold}" "${fold}" "${out_directory}"
+    run_evaluation "${example_name}" "${evaluator}" "${fairness_model}" "${fair_threshold}" "${fold}" "${out_directory}" ${STANDARD_OPTIONS}
 
     return 0
 }
@@ -83,6 +85,10 @@ function run_evaluation() {
     local fold=$5
     local out_directory=$6
 
+    shift 6
+    local options=$@
+    echo $options
+
     # path to output files
     local out_path="${out_directory}/eval_out.txt"
     local err_path="${out_directory}/eval_out.err"
@@ -94,7 +100,7 @@ function run_evaluation() {
         # call inference script for SRL model type
         pushd . > /dev/null
             cd "psl_scripts" || exit
-            ./run_inference.sh "${example_name}" "${evaluator}" "${fairness_model}" "${fold}" "${out_directory}"> "$out_path" 2> "$err_path"
+            ./run_inference.sh "${example_name}" "${evaluator}" "${fairness_model}" "${fold}" "${out_directory}" $options> "$out_path" 2> "$err_path"
         popd > /dev/null
     fi
 }

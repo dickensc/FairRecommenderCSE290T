@@ -13,9 +13,10 @@ readonly SUPPORTED_FAIRNESS_MODELS='base rank non_parity value non_parity_value 
 
 #readonly FAIRNESS_MODELS='base rank non_parity value non_parity_value nb nmf non_parity_nmf_retro_fit value_nmf_retro_fit mutual_information'
 readonly NOISE_MODELS='clean corrrupted1 corrrupted1 corrrupted1'
-readonly FAIRNESS_MODELS='non_parity'
+readonly FAIRNESS_MODELS='base non_parity'
 declare -A FAIRNESS_THRESHOLDS
 FAIRNESS_THRESHOLDS['non_parity']='0.002 0.004 0.006 0.008 0.010 0.012 0.014 0.016 0.018 0.020 0.022 0.024 0.026 0.028 0.030'
+FAIRNESS_THRESHOLDS['base']='0.0'
 
 readonly WL_METHODS='UNIFORM'
 readonly SEED=22

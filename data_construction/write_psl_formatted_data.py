@@ -39,9 +39,6 @@ from predicate_constructors.fairness_predicates.group_item_block import group_it
 from predicate_constructors.fairness_predicates.group_denominator import group_denominators
 from predicate_constructors.fairness_predicates.constant import constant_predicate
 
-from predicate_constructors.mf_predicates.group_member import group_member_mf
-from predicate_constructors.mf_predicates.ratings import ratings_mf
-
 DATA_PATH = "../psl-datasets/movielens/data"
 N_FOLDS = 5
 

@@ -3,6 +3,9 @@
 # data
 psl-datasets/movielens/data/movielens
 psl-datasets/movielens/data/ml-1m
+psl-datasets/movielens/data/ml-1m_gender_flipping
+psl-datasets/movielens/data/ml-1m_gaussian_noise
+psl-datasets/movielens/data/ml-1m_poisson_noise
 
 # Intellij meta data
 .idea

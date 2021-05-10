@@ -3,6 +3,7 @@ import numpy as np
 import os
 
 from helpers import standardize_ratings
+from noise_generator.generate_noisy_data import generate_noisy_data
 
 from predicate_constructors.base_model_predicates.ratings import ratings_predicate
 from predicate_constructors.base_model_predicates.rated import rated_predicate
@@ -428,6 +429,7 @@ def load_dataframes():
 
 
 def main():
+    generate_noisy_data()
     construct_movielens_predicates()
 
 

@@ -14,45 +14,31 @@ NOISE_LEVELS = {
 DATA_FILES_COLS = {
     "gender_flipping": [{
         "file": "users.dat",
-        "col": 1
+        "col": [1]
     }],
     "poisson_noise": [{
         "file": "ratings.dat",
-        "col": 2
+        "col": [2]
     }],
     "gaussian_noise": [{
         "file": "users.dat",
-        "col": 2
+        "col": [2]
     }]
 }
 
 
-def generate_noisy_data(dataset_path='./', out='./out', noise_models=None, noise_levels=None, columns=None):
-    if noise_models is None:
-        noise_models = []
-    if noise_levels is None:
-        noise_levels = []
-    if columns is None:
-        columns = []
-    dataset = pd.read_csv(dataset_path, sep='::', header=None, index_col=False)
-    for index in range(len(columns)):
-        col = columns[index]
-        noise_method = getattr(noise, noise_models[index])
-        dataset.iloc[:, int(col)] = dataset.iloc[:, int(col)].apply(lambda x: noise_method(x, noise_levels[index]))
-    with open(out, 'w') as f:
-        for index, row in dataset.iterrows():
-            f.write('::'.join([str(elem) for elem in row]))
-            f.write('\n')
-
-
-def main():
+def generate_noisy_data():
     for noise_model in ATTRIBUTE_NOISE_MODELS:
         for noise_level in NOISE_LEVELS[noise_model]:
             for data_file_col in DATA_FILES_COLS[noise_model]:
                 out_directory = os.path.join(BASE_OUT_DIRECTORY, "ml-1m_{}/{}".format(noise_model, noise_level))
                 dataset_path = os.path.join(DATA_PATH, "{}".format(data_file_col["file"]))
-                generate_noisy_data(dataset_path, out_directory, noise_model, noise_level, data_file_col["col"])
-
-
-if __name__ == '__main__':
-    main()
+                dataset = pd.read_csv(dataset_path, sep='::', header=None, index_col=False)
+                for index in range(len(data_file_col["col"])):
+                    col = data_file_col["col"]
+                    noise_method = getattr(noise, noise_model)
+                    dataset.iloc[:, int(col)] = dataset.iloc[:, int(col)].apply(lambda x: noise_method(x, noise_level))
+                with open(out_directory, 'w') as f:
+                    for index, row in dataset.iterrows():
+                        f.write('::'.join([str(elem) for elem in row]))
+                        f.write('\n')

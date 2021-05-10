@@ -24,7 +24,7 @@ readonly TRACE_LEVEL='TRACE'
 
 # Evaluators to be use for each example
 declare -A DATASET_EVALUATORS
-DATASET_EVALUATORS[movielens]='Continuous AUC'
+DATASET_EVALUATORS[movielens]='Continuous'
 
 readonly STANDARD_OPTIONS='-D reasoner.tolerance=1.0e-5f -D inference.relax.squared=false -D inference.normalize=false -D weightlearning.inference=SGDInference'
 

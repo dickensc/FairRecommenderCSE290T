@@ -112,7 +112,7 @@ def write_predicates(observed_ratings_df, truth_ratings_df, user_df, movies_df, 
 
     nmf_ratings_predicate(observed_ratings_df, truth_ratings_df, fold=str(fold), phase=phase)
     svd_ratings_predicate(observed_ratings_df, truth_ratings_df, fold=str(fold), phase=phase)
-    # nb_ratings_predicate(observed_ratings_df, truth_ratings_df, user_df, movies_df, fold=str(fold), phase=phase)
+    nb_ratings_predicate(observed_ratings_df, truth_ratings_df, user_df, movies_df, fold=str(fold), phase=phase)
 
     average_item_rating_predicate(observed_ratings_df, fold=str(fold), phase=phase)
     average_user_rating_predicate(observed_ratings_df, fold=str(fold), phase=phase)

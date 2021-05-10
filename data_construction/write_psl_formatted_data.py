@@ -426,7 +426,7 @@ def load_dataframes():
 
 
 def main():
-    # generate_noisy_data()
+    generate_noisy_data()
     construct_movielens_predicates()
 
 

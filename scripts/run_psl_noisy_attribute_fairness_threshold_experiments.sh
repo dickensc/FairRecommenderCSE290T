@@ -28,7 +28,7 @@ DATASET_EVALUATORS[movielens]='Continuous AUC'
 
 readonly STANDARD_OPTIONS='-D reasoner.tolerance=1.0e-5f -D inference.relax.squared=false -D inference.normalize=false -D weightlearning.inference=SGDInference'
 
-# Evaluators to be use for each example
+# Number of folds to be used for each example
 declare -A DATASET_FOLDS
 DATASET_FOLDS[movielens]=5
 

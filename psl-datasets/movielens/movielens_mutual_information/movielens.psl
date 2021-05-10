@@ -30,5 +30,5 @@
 1.0 : rating(U, I) = 1.0 ^2
 1.0 : ~rating(U, I) ^2
 
-// Mutual Information Fairness Regularizer
-@MI[rating(+U1, I), group_member(+U2, +G)] {U1: rated(U1, I)}
+// Mutual Information Fairness Constraint
+@MI[rating(+U1, I), group_member(+U2, +G)] <= TAU . {U1: rated(U1, I)}

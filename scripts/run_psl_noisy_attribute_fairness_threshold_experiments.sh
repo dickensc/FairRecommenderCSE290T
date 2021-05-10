@@ -11,11 +11,11 @@ readonly STUDY_NAME='noisy_attribute_fairness_threshold_study'
 readonly SUPPORTED_DATASETS='movielens'
 readonly SUPPORTED_FAIRNESS_MODELS='base rank non_parity value non_parity_value nmf nb non_parity_nmf_retro_fit value_nmf_retro_fit mutual_information'
 
-#readonly FAIRNESS_MODELS='base rank non_parity value non_parity_value nb nmf non_parity_nmf_retro_fit value_nmf_retro_fit mutual_information'
 readonly NOISE_MODELS='clean corrrupted1 corrrupted1 corrrupted1'
-readonly FAIRNESS_MODELS='base non_parity'
+readonly FAIRNESS_MODELS='mutual_information base non_parity'
 declare -A FAIRNESS_THRESHOLDS
-FAIRNESS_THRESHOLDS['non_parity']='0.002 0.004 0.006 0.008 0.010 0.012 0.014 0.016 0.018 0.020 0.022 0.024 0.026 0.028 0.030'
+FAIRNESS_THRESHOLDS['non_parity']='0.002 0.004 0.006 0.008 0.010'
+FAIRNESS_THRESHOLDS['mutual_information']='0.0005 0.001 0.0015 0.002 0.0025 0.003 0.0035'
 FAIRNESS_THRESHOLDS['base']='0.0'
 
 readonly WL_METHODS='UNIFORM'
@@ -88,7 +88,6 @@ function run_evaluation() {
 
     shift 6
     local options=$@
-    echo $options
 
     # path to output files
     local out_path="${out_directory}/eval_out.txt"
@@ -159,7 +158,7 @@ function write_fairness_threshold() {
               rule="group1_avg_rating\(c\) = group2_avg_rating\(c\)"
               rule="pred_group_average_item_rating\(G1, I\) - obs_group_average_item_rating\(G1, I\) = pred_group_average_item_rating\(G2, I\) - obs_group_average_item_rating\(G2, I\)"
             elif [[ ${fairness_model} == 'mutual_information' ]]; then
-              rule="@MI\[rating\(\+U1, I\), group_member\(\+U2, \+G\)\] \{U1: rated\(U1, I\)\}"
+              rule="@MI\[rating\(\+U1, I\), group_member\(\+U2, \+G\)\]"
             fi
             sed -i -r "s/^${rule} <= TAU .|${rule} <= [0-9]+.[0-9]+ ./${rule} <= ${fairness_threshold} ./g"  "${example_name}.psl"
             sed -i -r "s/^${rule} >= TAU .|${rule} >= [0-9]+.[0-9]+ ./${rule} >= ${fairness_threshold} ./g"  "${example_name}.psl"
@@ -172,7 +171,7 @@ function write_fairness_threshold() {
               rule="group1_avg_rating\(c\) = group2_avg_rating\(c\)"
               rule="pred_group_average_item_rating\(G1, I\) - obs_group_average_item_rating\(G1, I\) = pred_group_average_item_rating\(G2, I\) - obs_group_average_item_rating\(G2, I\)"
             elif [[ ${fairness_model} == 'mutual_information' ]]; then
-              rule="@MI\[rating\(\+U1, I\), group_member\(\+U2, \+G\)\] \{U1: rated\(U1, I\)\}"
+              rule="@MI\[rating\(\+U1, I\), group_member\(\+U2, \+G\)\]"
             fi
             sed -i -r "s/^${rule} <= TAU .|${rule} <= [0-9]+.[0-9]+ ./${rule} <= ${fairness_threshold} ./g"  "${example_name}.psl"
             sed -i -r "s/^${rule} >= TAU .|${rule} >= [0-9]+.[0-9]+ ./${rule} >= ${fairness_threshold} ./g"  "${example_name}.psl"

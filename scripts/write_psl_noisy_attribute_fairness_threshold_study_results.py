@@ -102,7 +102,7 @@ def main():
 
                         # calculate experiment performance and append to performance frame
                         performance_series = calculate_experiment_performance(method, dataset, wl_method, evaluator,
-                                                                              folds, fair_method, fair_threshold)
+                                                                              folds, fair_method, float(fair_threshold))
                         performance_frame = performance_frame.append(performance_series, ignore_index=True)
 
     # write performance_frame and timing_frame to results/fairness/{}/noisy_attribute_fairness_threshold_study
@@ -155,15 +155,16 @@ def calculate_experiment_performance(method, dataset, wl_method, evaluator, fold
     performance_series['Dataset'] = dataset
     performance_series['Wl_Method'] = wl_method
     performance_series['Fairness_Model'] = model
-    performance_series['Fairness_Threshold'] = threshold * 5
     performance_series['Evaluation_Method'] = evaluator
     performance_series['Evaluator_Mean'] = experiment_performance.mean() * 5
     performance_series['Evaluator_Standard_Deviation'] = experiment_performance.std() * 5
     for metric in FAIRNESS_NAME_TO_EVALUATOR.keys():
         if (metric != 'mutual_information'):
+            performance_series['Fairness_Threshold'] = threshold * 5
             performance_series[metric + '_Mean'] = experiment_fairness[metric].mean() * 5
             performance_series[metric + '_Standard_Deviation'] = experiment_fairness[metric].std() * 5
         else:
+            performance_series['Fairness_Threshold'] = threshold
             performance_series[metric + '_Mean'] = experiment_fairness[metric].mean()
             performance_series[metric + '_Standard_Deviation'] = experiment_fairness[metric].std()
 

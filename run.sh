@@ -25,13 +25,6 @@ function main() {
         # shellcheck disable=SC2086
         ./run_psl_noisy_attribute_fairness_threshold_experiments.sh ${dataset_paths}
     popd > /dev/null
-
-    echo "Running FairPSL experiments on datasets: [${DATASETS}]."
-    pushd . > /dev/null
-        cd "./scripts" || exit
-        # shellcheck disable=SC2086
-        ./run_fairpsl_fairness_experiments.sh ${dataset_paths}
-    popd > /dev/null
 }
 
 main "$@"

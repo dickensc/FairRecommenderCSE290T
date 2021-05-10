@@ -390,7 +390,7 @@ def load_dataframes():
     gaussian_corrupted_ratings_dfs = {}
     for noise_level in NOISE_LEVELS["gaussian_noise"]:
         gaussian_corrupted_ratings_dfs[noise_level] = pd.read_csv(
-            DATA_PATH + '/ml-1m/gaussian_noise/{}/ratings.dat'.format(noise_level), sep='::', header=None, engine='python')
+            DATA_PATH + '/ml-1m_gaussian_noise/{}/ratings.dat'.format(noise_level), sep='::', header=None, engine='python')
         gaussian_corrupted_ratings_dfs[noise_level].columns = ['userId', 'movieId', 'rating', 'timestamp']
         gaussian_corrupted_ratings_dfs[noise_level] = gaussian_corrupted_ratings_dfs[noise_level].astype({'userId': int, 'movieId': int})
         gaussian_corrupted_ratings_dfs[noise_level].rating = (
@@ -400,7 +400,7 @@ def load_dataframes():
     poisson_corrupted_ratings_dfs = {}
     for noise_level in NOISE_LEVELS["poisson_noise"]:
         poisson_corrupted_ratings_dfs[noise_level] = pd.read_csv(
-            DATA_PATH + '/ml-1m/poisson_noise/{}/ratings.dat'.format(noise_level), sep='::', header=None, engine='python')
+            DATA_PATH + '/ml-1m_poisson_noise/{}/ratings.dat'.format(noise_level), sep='::', header=None, engine='python')
         poisson_corrupted_ratings_dfs[noise_level].columns = ['userId', 'movieId', 'rating', 'timestamp']
         poisson_corrupted_ratings_dfs[noise_level] = poisson_corrupted_ratings_dfs[noise_level].astype({'userId': int, 'movieId': int})
         poisson_corrupted_ratings_dfs[noise_level].rating = (
@@ -415,18 +415,18 @@ def load_dataframes():
 
     gender_flipping_user_dfs = {}
     for noise_level in NOISE_LEVELS["gender_flipping"]:
-        gender_flipping_user_dfs = pd.read_csv(
-            DATA_PATH + '/ml-1m/gender_flipping/{}/users.dat'.format(noise_level), sep='::', header=None,
+        gender_flipping_user_dfs[noise_level] = pd.read_csv(
+            DATA_PATH + '/ml-1m_gender_flipping/{}/users.dat'.format(noise_level), sep='::', header=None,
             encoding="ISO-8859-1", engine='python')
-        gender_flipping_user_dfs.columns = ['userId', 'gender', 'age', 'occupation', 'zip']
-        gender_flipping_user_dfs = gender_flipping_user_dfs.astype({'userId': int})
-        gender_flipping_user_dfs = gender_flipping_user_dfs.set_index('userId')
+        gender_flipping_user_dfs[noise_level] .columns = ['userId', 'gender', 'age', 'occupation', 'zip']
+        gender_flipping_user_dfs[noise_level] = gender_flipping_user_dfs[noise_level] .astype({'userId': int})
+        gender_flipping_user_dfs[noise_level] = gender_flipping_user_dfs[noise_level] .set_index('userId')
 
     return movies_df, ratings_df, user_df, gaussian_corrupted_ratings_dfs, poisson_corrupted_ratings_dfs, gender_flipping_user_dfs
 
 
 def main():
-    generate_noisy_data()
+    # generate_noisy_data()
     construct_movielens_predicates()
 
 

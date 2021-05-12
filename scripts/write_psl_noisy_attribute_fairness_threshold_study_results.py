@@ -45,7 +45,8 @@ EVALUATOR_NAME_TO_METHOD = {
 # }
 
 FAIRNESS_NAME_TO_EVALUATOR = {
-    'non_parity': evaluate_non_parity
+    'non_parity': evaluate_non_parity,
+    'model': evaluate_mutual_information
 }
 
 PERFORMANCE_COLUMNS = ['Dataset', 'Wl_Method', 'Fairness_Model', 'Fairness_Threshold', 'Evaluation_Method', 'Evaluator_Mean', 'Evaluator_Standard_Deviation']
@@ -158,13 +159,16 @@ def calculate_experiment_performance(method, dataset, wl_method, evaluator, fold
     performance_series['Evaluation_Method'] = evaluator
     performance_series['Evaluator_Mean'] = experiment_performance.mean() * 5
     performance_series['Evaluator_Standard_Deviation'] = experiment_performance.std() * 5
+    if model != 'mutual_information':
+        performance_series['Fairness_Threshold'] = threshold * 5
+    else:
+        performance_series['Fairness_Threshold'] = threshold
+
     for metric in FAIRNESS_NAME_TO_EVALUATOR.keys():
         if (metric != 'mutual_information'):
-            performance_series['Fairness_Threshold'] = threshold * 5
             performance_series[metric + '_Mean'] = experiment_fairness[metric].mean() * 5
             performance_series[metric + '_Standard_Deviation'] = experiment_fairness[metric].std() * 5
         else:
-            performance_series['Fairness_Threshold'] = threshold
             performance_series[metric + '_Mean'] = experiment_fairness[metric].mean()
             performance_series[metric + '_Standard_Deviation'] = experiment_fairness[metric].std()
 

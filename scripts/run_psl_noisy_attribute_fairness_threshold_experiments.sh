@@ -9,12 +9,17 @@ readonly BASE_OUT_DIR="${BASE_DIR}/results/fairness"
 
 readonly STUDY_NAME='noisy_attribute_fairness_threshold_study'
 readonly SUPPORTED_DATASETS='movielens'
-readonly SUPPORTED_FAIRNESS_MODELS='base rank non_parity value non_parity_value nmf nb non_parity_nmf_retro_fit value_nmf_retro_fit mutual_information'
+readonly SUPPORTED_FAIRNESS_MODELS='base non_parity mutual_information'
 
-readonly NOISE_MODELS='clean corrrupted1 corrrupted1 corrrupted1'
-readonly FAIRNESS_MODELS='mutual_information base non_parity'
+readonly NOISE_MODELS='clean gaussian_noise poisson_noise gender_flipping'
+declare -A NOISE_LEVELS
+NOISE_LEVELS['gaussian_noise']='0.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4'
+NOISE_LEVELS['poisson_noise']='0.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4'
+NOISE_LEVELS['gender_flipping']='0.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4'
+readonly FAIRNESS_MODELS='base non_parity mutual_information'
 declare -A FAIRNESS_THRESHOLDS
 FAIRNESS_THRESHOLDS['non_parity']='0.002 0.004 0.006 0.008 0.010'
+FAIRNESS_THRESHOLDS['non_parity_noise_tolerant']='0.002 0.004 0.006 0.008 0.010'
 FAIRNESS_THRESHOLDS['mutual_information']='0.0005 0.001 0.0015 0.002 0.0025 0.003 0.0035'
 FAIRNESS_THRESHOLDS['base']='0.0'
 
@@ -26,22 +31,24 @@ readonly TRACE_LEVEL='TRACE'
 declare -A DATASET_EVALUATORS
 DATASET_EVALUATORS[movielens]='Continuous'
 
-readonly STANDARD_OPTIONS='-D reasoner.tolerance=1.0e-5f -D inference.relax.squared=false -D inference.normalize=false -D weightlearning.inference=SGDInference'
+readonly STANDARD_OPTIONS='-D reasoner.tolerance=1.0e-5f -D inference.relax.multiplier=1.0e3f -D inference.relax.squared=false -D inference.normalize=false -D weightlearning.inference=SGDInference'
 
 # Number of folds to be used for each example
 declare -A DATASET_FOLDS
-DATASET_FOLDS[movielens]=5
+DATASET_FOLDS[movielens]=1
 
 function run_example() {
     local example_name=$1
     local wl_method=$2
-    local fairness_model=$3
     local noise_model=$3
-    local fold=$4
-    local fair_threshold=$5
-    local evaluator=$6
+    local noise_level=$4
+    local fairness_model=$5
+    local noise_model=$6
+    local fold=$7
+    local fair_threshold=$8
+    local evaluator=$9
 
-    echo "Running example ${example_name} : ${fairness_model} : ${fold} : ${wl_method} : tau=${fair_threshold}"
+    echo "Running example ${example_name} : ${noise_model} : ${noise_level} : ${fairness_model} : ${fold} : ${wl_method} : tau=${fair_threshold}"
 
     local cli_directory="${BASE_DIR}/psl-datasets/${example_name}/cli"
 
@@ -150,12 +157,9 @@ function write_fairness_threshold() {
         if [[ ${fairness_model} != 'base' ]]; then
           if [[ ${wl_method} == 'UNIFORM' ]]; then
             # set the fairness related constraint thresholds in the learned file to the fairness_threshold value and write to learned.psl file
-            if [[ ${fairness_model} == 'non_parity' || ${fairness_model} == 'non_parity_nmf_retro_fit' ]]; then
+            if [[ ${fairness_model} == 'non_parity' ]]; then
               rule="group1_avg_rating\(c\) - group2_avg_rating\(c\)"
-            elif [[ ${fairness_model} == 'value' || ${fairness_model} == 'value_nmf_retro_fit' ]]; then
-              rule="pred_group_average_item_rating\(G1, I\) - obs_group_average_item_rating\(G1, I\) = pred_group_average_item_rating\(G2, I\) - obs_group_average_item_rating\(G2, I\)"
-            elif [[ ${fairness_model} == 'non_parity_value' ]]; then
-              rule="group1_avg_rating\(c\) = group2_avg_rating\(c\)"
+            elif [[ ${fairness_model} == 'value' ]]; then
               rule="pred_group_average_item_rating\(G1, I\) - obs_group_average_item_rating\(G1, I\) = pred_group_average_item_rating\(G2, I\) - obs_group_average_item_rating\(G2, I\)"
             elif [[ ${fairness_model} == 'mutual_information' ]]; then
               rule="@MI\[rating\(\+U1, I\), group_member\(\+U2, \+G\)\]"
@@ -163,13 +167,10 @@ function write_fairness_threshold() {
             sed -i -r "s/^${rule} <= TAU .|${rule} <= [0-9]+.[0-9]+ ./${rule} <= ${fairness_threshold} ./g"  "${example_name}.psl"
             sed -i -r "s/^${rule} >= TAU .|${rule} >= [0-9]+.[0-9]+ ./${rule} >= ${fairness_threshold} ./g"  "${example_name}.psl"
           else
-            if [[ ${fairness_model} == 'non_parity' || ${fairness_model} == 'non_parity_nmf_retro_fit' ]]; then
+            if [[ ${fairness_model} == 'non_parity' ]]; then
               rule="1.0 \* GROUP1_AVG_RATING\(c\) \+ -1.0 \* GROUP2_AVG_RATING\(c\) = 0.0"
-            elif [[ ${fairness_model} == 'value' || ${fairness_model} == 'value_nmf_retro_fit' ]]; then
+            elif [[ ${fairness_model} == 'value' ]]; then
               rule="1.0 \* PRED_GROUP_AVERAGE_ITEM_RATING\(G1, I\) \+ -1.0 \* OBS_GROUP_AVERAGE_ITEM_RATING\(G1, I\) \+ -1.0 \* PRED_GROUP_AVERAGE_ITEM_RATING\(G2, I\) \+ 1.0 \* OBS_GROUP_AVERAGE_ITEM_RATING\(G2, I\) = 0.0"
-            elif [[ ${fairness_model} == 'non_parity_value' ]]; then
-              rule="group1_avg_rating\(c\) = group2_avg_rating\(c\)"
-              rule="pred_group_average_item_rating\(G1, I\) - obs_group_average_item_rating\(G1, I\) = pred_group_average_item_rating\(G2, I\) - obs_group_average_item_rating\(G2, I\)"
             elif [[ ${fairness_model} == 'mutual_information' ]]; then
               rule="@MI\[rating\(\+U1, I\), group_member\(\+U2, \+G\)\]"
             fi
@@ -191,15 +192,19 @@ function main() {
 
     for example_name in "$@"; do
       for wl_method in ${WL_METHODS}; do
-        for fairness_model in ${FAIRNESS_MODELS}; do
-          for fair_threshold in ${FAIRNESS_THRESHOLDS[${fairness_model}]}; do
-            for evaluator in ${DATASET_EVALUATORS[${example_name}]}; do
-              for ((fold=0; fold<${DATASET_FOLDS[${example_name}]}; fold++)) do
-                if [[ "${SUPPORTED_DATASETS}" == *"${example_name}"* ]]; then
-                  if [[ "${SUPPORTED_FAIRNESS_MODELS}" == *"${fairness_model}"* ]]; then
-                    run_example "${example_name}" "${wl_method}" "${fairness_model}" "${fold}" "${fair_threshold}" "${evaluator}"
-                  fi
-                 fi
+        for noise_model in ${NOISE_MODELS}; do
+          for noise_level in ${NOISE_LEVELS[${noise_model}]}; do
+            for fairness_model in ${FAIRNESS_MODELS}; do
+              for fair_threshold in ${FAIRNESS_THRESHOLDS[${fairness_model}]}; do
+                for evaluator in ${DATASET_EVALUATORS[${example_name}]}; do
+                  for ((fold=0; fold<${DATASET_FOLDS[${example_name}]}; fold++)) do
+                    if [[ "${SUPPORTED_DATASETS}" == *"${example_name}"* ]]; then
+                      if [[ "${SUPPORTED_FAIRNESS_MODELS}" == *"${fairness_model}"* ]]; then
+                        run_example "${example_name}" "${wl_method}" "${noise_model}" "${noise_level}" "${fairness_model}" "${fold}" "${fair_threshold}" "${evaluator}"
+                      fi
+                     fi
+                  done
+                done
               done
             done
           done

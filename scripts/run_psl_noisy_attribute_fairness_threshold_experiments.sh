@@ -13,6 +13,7 @@ readonly SUPPORTED_FAIRNESS_MODELS='base non_parity mutual_information'
 
 readonly NOISE_MODELS='clean gaussian_noise poisson_noise gender_flipping'
 declare -A NOISE_LEVELS
+NOISE_LEVELS['clean']='0.0'
 NOISE_LEVELS['gaussian_noise']='0.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4'
 NOISE_LEVELS['poisson_noise']='0.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4'
 NOISE_LEVELS['gender_flipping']='0.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4'
@@ -31,11 +32,29 @@ readonly TRACE_LEVEL='TRACE'
 declare -A DATASET_EVALUATORS
 DATASET_EVALUATORS[movielens]='Continuous'
 
-readonly STANDARD_OPTIONS='-D reasoner.tolerance=1.0e-5f -D inference.relax.multiplier=1.0e3f -D inference.relax.squared=false -D inference.normalize=false -D weightlearning.inference=SGDInference'
+readonly RELAX_MULTIPLIER='1.0'
+readonly STANDARD_OPTIONS='-D reasoner.tolerance=1.0e-12f -D inference.relax.multiplier=100.0 -D weightlearning.inference=SGDInference'
 
 # Number of folds to be used for each example
 declare -A DATASET_FOLDS
 DATASET_FOLDS[movielens]=1
+
+# Fair weight learning rate
+declare -A LEARNING_RATES
+LEARNING_RATES['LEARNED']='-D sgd.learningrate=1.0'
+LEARNING_RATES['0.00001']='-D sgd.learningrate=1.0'
+LEARNING_RATES['0.0001']='-D sgd.learningrate=1.0'
+LEARNING_RATES['0.001']='-D sgd.learningrate=1.0'
+LEARNING_RATES['0.01']='-D sgd.learningrate=10.0'
+LEARNING_RATES['0.1']='-D sgd.learningrate=10.0'
+LEARNING_RATES['1.0']='-D sgd.learningrate=10.0'
+LEARNING_RATES['10.0']='-D sgd.learningrate=100.0'
+LEARNING_RATES['100.0']='-D sgd.learningrate=100.0'
+LEARNING_RATES['1000.0']='-D sgd.learningrate=100.0'
+LEARNING_RATES['10000.0']='-D sgd.learningrate=1000.0'
+LEARNING_RATES['100000.0']='-D sgd.learningrate=1000.0'
+LEARNING_RATES['1000000.0']='-D sgd.learningrate=10000.0'
+LEARNING_RATES['10000000.0']='-D sgd.learningrate=10000.0 -D reasoner.tolerance=1e-15f'
 
 function run_example() {
     local example_name=$1
@@ -43,10 +62,9 @@ function run_example() {
     local noise_model=$3
     local noise_level=$4
     local fairness_model=$5
-    local noise_model=$6
-    local fold=$7
-    local fair_threshold=$8
-    local evaluator=$9
+    local fold=$6
+    local fair_threshold=$7
+    local evaluator=$8
 
     echo "Running example ${example_name} : ${noise_model} : ${noise_level} : ${fairness_model} : ${fold} : ${wl_method} : tau=${fair_threshold}"
 
@@ -67,7 +85,7 @@ function run_example() {
     run_weight_learning "${example_name}" "${evaluator}" "${wl_method}" "${fairness_model}" "${fair_threshold}" "${fold}" "${cli_directory}" "${out_directory}" ${STANDARD_OPTIONS}
 
     ##### EVALUATION #####
-    run_evaluation "${example_name}" "${evaluator}" "${fairness_model}" "${fair_threshold}" "${fold}" "${out_directory}" ${STANDARD_OPTIONS}
+    run_evaluation "${example_name}" "${evaluator}" "${fairness_model}" "${fair_threshold}" "${fold}" "${out_directory}" ${STANDARD_OPTIONS} ${LEARNING_RATES[${RELAX_MULTIPLIER}]}
 
     return 0
 }
@@ -165,7 +183,7 @@ function write_fairness_threshold() {
               rule="@MI\[rating\(\+U1, I\), group_member\(\+U2, \+G\)\]"
             fi
             sed -i -r "s/^${rule} <= TAU .|${rule} <= [0-9]+.[0-9]+ ./${rule} <= ${fairness_threshold} ./g"  "${example_name}.psl"
-            sed -i -r "s/^${rule} >= TAU .|${rule} >= [0-9]+.[0-9]+ ./${rule} >= ${fairness_threshold} ./g"  "${example_name}.psl"
+            sed -i -r "s/^${rule} >= -TAU .|${rule} >= -[0-9]+.[0-9]+ ./${rule} >= -${fairness_threshold} ./g"  "${example_name}.psl"
           else
             if [[ ${fairness_model} == 'non_parity' ]]; then
               rule="1.0 \* GROUP1_AVG_RATING\(c\) \+ -1.0 \* GROUP2_AVG_RATING\(c\) = 0.0"
@@ -175,7 +193,7 @@ function write_fairness_threshold() {
               rule="@MI\[rating\(\+U1, I\), group_member\(\+U2, \+G\)\]"
             fi
             sed -i -r "s/^${rule} <= TAU .|${rule} <= [0-9]+.[0-9]+ ./${rule} <= ${fairness_threshold} ./g"  "${example_name}.psl"
-            sed -i -r "s/^${rule} >= TAU .|${rule} >= [0-9]+.[0-9]+ ./${rule} >= ${fairness_threshold} ./g"  "${example_name}.psl"
+            sed -i -r "s/^${rule} >= -TAU .|${rule} >= -[0-9]+.[0-9]+ ./${rule} >= -${fairness_threshold} ./g"  "${example_name}.psl"
           fi
         fi
 

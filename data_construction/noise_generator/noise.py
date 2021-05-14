@@ -1,27 +1,38 @@
 import numpy as np
+import random
 from scipy.stats import poisson
 
-
-# TODO (Charles): Movielens specific.
-def poisson_noise(num, noise_level):
-    if np.random.randint(100) <= noise_level:
-        return np.clip(poisson.rvs(num, size=1)[0], 1, 5)
-    return num
+MALE_FAV_GENRE = ['action', 'adventure', 'thriller']
+FEMALE_FAV_GENRE = ['romance', 'drama']
 
 
-# TODO (Charles): Movielens specific.
-def gaussian_noise(num, noise_level):
-    if np.random.randint(100) <= noise_level:
+def label_poisson_noise(row, noise_level):
+    if random.uniform(0, 1) <= noise_level:
+        row['Rating'] = np.clip(poisson.rvs(row['Rating'], size=1)[0], 1, 5)
+    return row
+
+
+def label_gaussian_noise(row, noise_level):
+    if random.uniform(0, 1) <= noise_level:
         mu = 0
         sigma = 1
-        return np.clip(num + np.random.normal(mu, sigma, 1)[0], 1, 5)
-    return num
+        row['Rating'] = np.clip(row['Rating'] + np.random.normal(mu, sigma, 1)[0], 1, 5)
+    return row
 
 
-# TODO (Charles): Movielens specific.
-def gender_flipping(sex, noise_level):
-    if np.random.randint(100) <= noise_level:
-        if sex == 'M':
-            return 'F'
-        return 'M'
-    return sex
+def gender_flipping(row, noise_level):
+    if random.uniform(0, 1) <= noise_level:
+        if row['Gender'] == 'M':
+            row['Gender'] = 'F'
+        else:
+            row['Gender'] = 'M'
+    return row
+
+
+def genre_gender_label_noise(row, noise_level):
+    if random.uniform(0, 1) <= noise_level:
+        if row['Gender'] == 'M' and any(genre in row['Genres'].lower() for genre in MALE_FAV_GENRE):
+            row['Rating'] = np.clip(row['Rating'] * 1.1, 1, 5)
+        if row['Gender'] == 'F' and any(genre in row['Genres'].lower() for genre in FEMALE_FAV_GENRE):
+            row['Rating'] = np.clip(row['Rating'] * 1.1, 1, 5)
+    return row

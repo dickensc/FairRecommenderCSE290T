@@ -81,11 +81,14 @@ function run_example() {
     # Write the fairness weight
     write_fairness_threshold "$fair_threshold" "$fairness_model" "$example_name" "$wl_method" "$cli_directory"
 
+    # Write the noisy
+    write_noise_threshold "$fair_threshold" "$fairness_model" "$example_name" "$wl_method" "$cli_directory" "$noise_model" "$noise_level"
+
     ##### WEIGHT LEARNING #####
     run_weight_learning "${example_name}" "${evaluator}" "${wl_method}" "${fairness_model}" "${fair_threshold}" "${fold}" "${cli_directory}" "${out_directory}" ${STANDARD_OPTIONS}
 
     ##### EVALUATION #####
-    run_evaluation "${example_name}" "${evaluator}" "${fairness_model}" "${fair_threshold}" "${fold}" "${out_directory}" ${STANDARD_OPTIONS} ${LEARNING_RATES[${RELAX_MULTIPLIER}]}
+    # run_evaluation "${example_name}" "${evaluator}" "${fairness_model}" "${fair_threshold}" "${fold}" "${out_directory}" ${STANDARD_OPTIONS} ${LEARNING_RATES[${RELAX_MULTIPLIER}]}
 
     return 0
 }
@@ -196,6 +199,33 @@ function write_fairness_threshold() {
             sed -i -r "s/^${rule} >= -TAU .|${rule} >= -[0-9]+.[0-9]+ ./${rule} >= -${fairness_threshold} ./g"  "${example_name}.psl"
           fi
         fi
+
+    popd > /dev/null
+}
+
+function write_noise_threshold() {
+    local fairness_threshold=$1
+    local fairness_model=$2
+    local example_name=$3
+    local wl_method=$4
+    local cli_directory=$5
+    local noise_model=$6
+    local noise_level=$7
+
+    # write fairness threshold for constrarint in psl file
+    pushd . > /dev/null
+        cd "${cli_directory}" || exit
+
+        target="${BASE_DIR}/psl-datasets/${example_name}/data/${example_name}/0/eval/${noise_model}/${noise_level}"
+        for filename in "$target"/*; do
+          basename=$(basename $filename)
+          name=$(echo "$basename" | rev | cut -d "_" -f2- | rev)
+          
+          a="${name}: ..\/data\/movielens\/0\/eval\/${basename}"
+          b="${name}: ..\/data\/movielens\/0\/eval\/${noise_model}\/${noise_level}\/${basename}"
+
+          sed -i -r "s/${a}/${b}/g" "movielens-eval.data"
+        done
 
     popd > /dev/null
 }

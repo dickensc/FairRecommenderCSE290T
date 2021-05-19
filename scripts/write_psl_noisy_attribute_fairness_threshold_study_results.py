@@ -46,7 +46,7 @@ EVALUATOR_NAME_TO_METHOD = {
 
 FAIRNESS_NAME_TO_EVALUATOR = {
     'non_parity': evaluate_non_parity,
-    'model': evaluate_mutual_information
+    'mutual_information': evaluate_mutual_information
 }
 
 PERFORMANCE_COLUMNS = ['Dataset', 'Wl_Method', 'Fairness_Model', 'Fairness_Threshold', 'Evaluation_Method', 'Evaluator_Mean', 'Evaluator_Standard_Deviation']

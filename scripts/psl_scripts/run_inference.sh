@@ -19,7 +19,7 @@ readonly STANDARD_PSL_OPTIONS="--postgres ${POSTGRES_DB} -D log4j.threshold=TRAC
 # Options specific to each model (missing keys yield empty strings).
 declare -A MODEL_OPTIONS
 MODEL_OPTIONS[base]='-D sgd.maxiterations=500'
-MODEL_OPTIONS[non_parity]='-D sgd.maxiterations=500'
+MODEL_OPTIONS[non_parity]='-D sgd.maxiterations=1000'
 MODEL_OPTIONS[value]='-D sgd.maxiterations=500'
 MODEL_OPTIONS[non_parity_value]='-D sgd.maxiterations=500'
 MODEL_OPTIONS[nb]='-D sgd.maxiterations=500'

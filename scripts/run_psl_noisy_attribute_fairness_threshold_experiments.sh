@@ -33,7 +33,7 @@ declare -A DATASET_EVALUATORS
 DATASET_EVALUATORS[movielens]='Continuous'
 
 readonly RELAX_MULTIPLIER='1.0'
-readonly STANDARD_OPTIONS='-D reasoner.tolerance=1.0e-12f -D inference.relax.multiplier=100.0 -D weightlearning.inference=SGDInference'
+readonly STANDARD_OPTIONS='-D reasoner.tolerance=1.0e-15f -D sgd.learningrate=10.0 -D inference.relax.squared=false -D inference.relax.multiplier=10000.0 -D weightlearning.inference=SGDInference -D sgd.extension=ADAM -D sgd.inversescaleexp=1.5'
 
 # Number of folds to be used for each example
 declare -A DATASET_FOLDS
@@ -85,7 +85,7 @@ function run_example() {
     run_weight_learning "${example_name}" "${evaluator}" "${wl_method}" "${fairness_model}" "${fair_threshold}" "${fold}" "${cli_directory}" "${out_directory}" ${STANDARD_OPTIONS}
 
     ##### EVALUATION #####
-    run_evaluation "${example_name}" "${evaluator}" "${fairness_model}" "${fair_threshold}" "${fold}" "${out_directory}" ${STANDARD_OPTIONS} ${LEARNING_RATES[${RELAX_MULTIPLIER}]}
+    run_evaluation "${example_name}" "${evaluator}" "${fairness_model}" "${fair_threshold}" "${fold}" "${out_directory}" ${STANDARD_OPTIONS}
 
     return 0
 }

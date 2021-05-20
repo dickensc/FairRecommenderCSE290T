@@ -70,7 +70,7 @@ function run_example() {
 
     local cli_directory="${BASE_DIR}/psl-datasets/${example_name}/cli"
 
-    out_directory="${BASE_OUT_DIR}/psl/${STUDY_NAME}/${example_name}/${wl_method}/${evaluator}/${fairness_model}/${fair_threshold}"/${fold}
+    out_directory="${BASE_OUT_DIR}/psl/${STUDY_NAME}/${example_name}/${wl_method}/${evaluator}/${noise_model}/${noise_level}/${fairness_model}/${fair_threshold}"/${fold}
 
     # Only make a new out directory if it does not already exist
     [[ -d "$out_directory" ]] || mkdir -p "$out_directory"
@@ -82,7 +82,7 @@ function run_example() {
     write_fairness_threshold "$fair_threshold" "$fairness_model" "$example_name" "$wl_method" "$cli_directory"
 
     # Write the noisy
-    write_noise_threshold "$fair_threshold" "$fairness_model" "$example_name" "$wl_method" "$cli_directory" "$noise_model" "$noise_level"
+    write_noise_threshold "$fair_threshold" "$fairness_model" "$example_name" "$fold" "$wl_method" "$cli_directory" "$noise_model" "$noise_level"
 
     ##### WEIGHT LEARNING #####
     run_weight_learning "${example_name}" "${evaluator}" "${wl_method}" "${fairness_model}" "${fair_threshold}" "${fold}" "${cli_directory}" "${out_directory}" ${STANDARD_OPTIONS}
@@ -207,22 +207,27 @@ function write_noise_threshold() {
     local fairness_threshold=$1
     local fairness_model=$2
     local example_name=$3
-    local wl_method=$4
-    local cli_directory=$5
-    local noise_model=$6
-    local noise_level=$7
+    local fold=$4
+    local wl_method=$5
+    local cli_directory=$6
+    local noise_model=$7
+    local noise_level=$8
 
     # write fairness threshold for constrarint in psl file
     pushd . > /dev/null
         cd "${cli_directory}" || exit
 
-        target="${BASE_DIR}/psl-datasets/${example_name}/data/${example_name}/0/eval/${noise_model}/${noise_level}"
-        for filename in "$target"/*; do
+        target="${BASE_DIR}/psl-datasets/${example_name}/data/${example_name}/${fold}/eval/${noise_model}/${noise_level}"
+        for filename in $(ls "$target"); do
+          echo "$filename"
           basename=$(basename $filename)
+          echo "$basename"
           name=$(echo "$basename" | rev | cut -d "_" -f2- | rev)
           
-          a="${name}: ..\/data\/movielens\/0\/eval\/${basename}"
-          b="${name}: ..\/data\/movielens\/0\/eval\/${noise_model}\/${noise_level}\/${basename}"
+          a="${name}: ..\/data\/movielens\/${fold}\/eval\/${basename}"
+          b="${name}: ..\/data\/movielens\/${fold}\/eval\/${noise_model}\/${noise_level}\/${basename}"
+
+          echo "s/${a}/${b}/g"
 
           sed -i -r "s/${a}/${b}/g" "movielens-eval.data"
         done

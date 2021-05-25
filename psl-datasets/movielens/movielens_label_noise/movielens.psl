@@ -3,6 +3,5 @@
 
 // Moment Matching
 rating(+U, +I) / DENOMINATOR_1 = group1_avg_rating(G) . {U: group_1(U)} {I: group_1_item_block(I) & target(U,I) & Genre(G)}
-rating(+U, +I) / DENOMINATOR_2 = group2_avg_rating(G) . {U: group_2(U)} {I: group_2_item_block(I) & target(U,I) & Genre(G}
+rating(+U, +I) / DENOMINATOR_2 = group2_avg_rating(G) . {U: group_2(U)} {I: group_2_item_block(I) & target(U,I) & Genre(G)}
 1.0: group1_avg_rating(G) = group2_avg_rating(G)
-

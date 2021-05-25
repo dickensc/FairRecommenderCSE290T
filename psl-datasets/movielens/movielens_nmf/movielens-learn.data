@@ -1,0 +1,15 @@
+predicates:
+    target/2: closed
+    rating/2: open
+    nmf_rating/2: closed
+
+observations:
+    target: ../data/movielens/0/learn/target_obs.txt
+    nmf_rating: ../data/movielens/0/learn/nmf_rating_obs.txt
+    rating: ../data/movielens/0/learn/rating_obs.txt
+
+targets:
+   rating: ../data/movielens/0/learn/rating_targets.txt
+
+truth:
+   rating: ../data/movielens/0/learn/rating_truth.txt

@@ -9,20 +9,24 @@ readonly BASE_OUT_DIR="${BASE_DIR}/results/fairness"
 
 readonly STUDY_NAME='noisy_attribute_fairness_threshold_study'
 readonly SUPPORTED_DATASETS='movielens'
-readonly SUPPORTED_FAIRNESS_MODELS='base non_parity mutual_information'
+readonly SUPPORTED_FAIRNESS_MODELS='base non_parity_attribute_denoised non_parity mutual_information'
 
-readonly NOISE_MODELS='clean gaussian_noise poisson_noise gender_flipping'
+readonly NOISE_MODELS='gaussian_noise poisson_noise gender_flipping clean'
 declare -A NOISE_LEVELS
 NOISE_LEVELS['clean']='0.0'
 NOISE_LEVELS['gaussian_noise']='0.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4'
 NOISE_LEVELS['poisson_noise']='0.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4'
 NOISE_LEVELS['gender_flipping']='0.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4'
-readonly FAIRNESS_MODELS='base non_parity mutual_information'
+readonly FAIRNESS_MODELS='non_parity_attribute_denoised base non_parity mutual_information mutual_information_attribute_denoised'
 declare -A FAIRNESS_THRESHOLDS
 FAIRNESS_THRESHOLDS['non_parity']='0.002 0.004 0.006 0.008 0.010'
 FAIRNESS_THRESHOLDS['non_parity_noise_tolerant']='0.002 0.004 0.006 0.008 0.010'
 FAIRNESS_THRESHOLDS['mutual_information']='0.0005 0.001 0.0015 0.002 0.0025 0.003 0.0035'
 FAIRNESS_THRESHOLDS['base']='0.0'
+
+readonly DENOISED_MODELS='non_parity_attribute_denoised mutual_information_attribute_denoised'
+declare -A DENOISER_MODEL
+DENOISER_MODEL['non_parity_attribute_denoised']='movielens_attribute_noise'
 
 readonly WL_METHODS='UNIFORM'
 readonly SEED=22
@@ -38,23 +42,6 @@ readonly STANDARD_OPTIONS='-D reasoner.tolerance=1.0e-15f -D sgd.learningrate=10
 # Number of folds to be used for each example
 declare -A DATASET_FOLDS
 DATASET_FOLDS[movielens]=1
-
-# Fair weight learning rate
-declare -A LEARNING_RATES
-LEARNING_RATES['LEARNED']='-D sgd.learningrate=1.0'
-LEARNING_RATES['0.00001']='-D sgd.learningrate=1.0'
-LEARNING_RATES['0.0001']='-D sgd.learningrate=1.0'
-LEARNING_RATES['0.001']='-D sgd.learningrate=1.0'
-LEARNING_RATES['0.01']='-D sgd.learningrate=10.0'
-LEARNING_RATES['0.1']='-D sgd.learningrate=10.0'
-LEARNING_RATES['1.0']='-D sgd.learningrate=10.0'
-LEARNING_RATES['10.0']='-D sgd.learningrate=100.0'
-LEARNING_RATES['100.0']='-D sgd.learningrate=100.0'
-LEARNING_RATES['1000.0']='-D sgd.learningrate=100.0'
-LEARNING_RATES['10000.0']='-D sgd.learningrate=1000.0'
-LEARNING_RATES['100000.0']='-D sgd.learningrate=1000.0'
-LEARNING_RATES['1000000.0']='-D sgd.learningrate=10000.0'
-LEARNING_RATES['10000000.0']='-D sgd.learningrate=10000.0 -D reasoner.tolerance=1e-15f'
 
 function run_example() {
     local example_name=$1
@@ -81,8 +68,11 @@ function run_example() {
     # Write the fairness weight
     write_fairness_threshold "$fair_threshold" "$fairness_model" "$example_name" "$wl_method" "$cli_directory"
 
-    # Write the noisy
+    # Write the noise threshold
     write_noise_threshold "$fair_threshold" "$fairness_model" "$example_name" "$fold" "$wl_method" "$cli_directory" "$noise_model" "$noise_level"
+
+    # Run denoising model
+    run_denoising_model "${example_name}" "${evaluator}" "${fairness_model}" "${noise_model}" "${noise_level}" "${fold}" "${out_directory}"
 
     ##### WEIGHT LEARNING #####
     run_weight_learning "${example_name}" "${evaluator}" "${wl_method}" "${fairness_model}" "${fair_threshold}" "${fold}" "${cli_directory}" "${out_directory}" ${STANDARD_OPTIONS}
@@ -93,17 +83,55 @@ function run_example() {
     return 0
 }
 
+function run_denoising_model() {
+    local example_name=$1
+    local evaluator=$2
+    local fairness_model=$3
+    local noise_model=$4
+    local noise_level=$5
+    local fold=$6
+    local out_directory=$7
+
+    if [[ "${DENOISED_MODELS}" == *"${fairness_model}"* ]]; then
+      local out_path="${out_directory}/eval_denoising_out.txt"
+      local err_path="${out_directory}/eval_denoising_out.err"
+
+      if [[ -e "${out_path}" ]]; then
+          echo "Output file already exists, skipping: ${out_path}"
+      else
+          echo "Running denoising model for ${example_name} ${evaluator} ${noise_model} ${noise_level} (#${fold})."
+          # call inference script for SRL model type
+          pushd . > /dev/null
+              cd "psl_scripts" || exit
+              ./run_inference.sh "${example_name}" "${evaluator}" "${DENOISER_MODEL[${fairness_model}]}" "${fold}" "${out_directory}" > "$out_path" 2> "$err_path"
+          popd > /dev/null
+      fi
+
+      if [[ ${fairness_model} == 'non_parity_attribute_denoised' ]]; then
+        # Round group_1 group_2 predictions.
+        python3 ./round_group_predictions "$out_directory"
+
+        # Set the denoised data
+        pushd . > /dev/null
+          cd "${cli_directory}" || exit
+
+          sed
+        popd > /dev/null
+      fi
+    fi
+}
+
 function setup_fairness_experiment() {
-      local example_name=$1
-      local fairness_model=$2
-      local cli_directory=$3
+    local example_name=$1
+    local fairness_model=$2
+    local cli_directory=$3
 
-      local fairness_model_directory="${BASE_DIR}/psl-datasets/${example_name}/${example_name}_${fairness_model}"
+    local fairness_model_directory="${BASE_DIR}/psl-datasets/${example_name}/${example_name}_${fairness_model}"
 
-      # copy the .data and .psl files into the cli directory
-      cp "${fairness_model_directory}/${example_name}.psl" "${cli_directory}/${example_name}.psl"
-      cp "${fairness_model_directory}/${example_name}-eval.data" "${cli_directory}/${example_name}-eval.data"
-      cp "${fairness_model_directory}/${example_name}-learn.data" "${cli_directory}/${example_name}-learn.data"
+    # copy the .data and .psl files into the cli directory
+    cp "${fairness_model_directory}/${example_name}.psl" "${cli_directory}/${example_name}.psl"
+    cp "${fairness_model_directory}/${example_name}-eval.data" "${cli_directory}/${example_name}-eval.data"
+    cp "${fairness_model_directory}/${example_name}-learn.data" "${cli_directory}/${example_name}-learn.data"
 }
 
 function run_evaluation() {
@@ -217,20 +245,18 @@ function write_noise_threshold() {
     pushd . > /dev/null
         cd "${cli_directory}" || exit
 
-        target="${BASE_DIR}/psl-datasets/${example_name}/data/${example_name}/${fold}/eval/${noise_model}/${noise_level}"
-        for filename in $(ls "$target"); do
-          echo "$filename"
-          basename=$(basename $filename)
-          echo "$basename"
-          name=$(echo "$basename" | rev | cut -d "_" -f2- | rev)
-          
-          a="${name}: ..\/data\/movielens\/${fold}\/eval\/${basename}"
-          b="${name}: ..\/data\/movielens\/${fold}\/eval\/${noise_model}\/${noise_level}\/${basename}"
+        if [[ ${noise_model} != 'clean' ]]; then
+          target="${BASE_DIR}/psl-datasets/${example_name}/data/${example_name}/${fold}/eval/${noise_model}/${noise_level}"
+          for filename in $(ls "$target"); do
+            basename=$(basename $filename)
+            name=$(echo "$basename" | rev | cut -d "_" -f2- | rev)
 
-          echo "s/${a}/${b}/g"
+            a="${name}: ..\/data\/movielens\/${fold}\/eval\/${basename}"
+            b="${name}: ..\/data\/movielens\/${fold}\/eval\/${noise_model}\/${noise_level}\/${basename}"
 
-          sed -i -r "s/${a}/${b}/g" "movielens-eval.data"
-        done
+            sed -i -r "s/${a}/${b}/g" "movielens-eval.data"
+          done
+        fi
 
     popd > /dev/null
 }

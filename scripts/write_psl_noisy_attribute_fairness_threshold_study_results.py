@@ -82,29 +82,37 @@ def main():
             evaluators = [evaluator for evaluator in os.listdir(path) if os.path.isdir(os.path.join(path, evaluator))]
 
             for evaluator in evaluators:
-                # extract all the folds that are in the directory
                 path = '{}/../results/fairness/{}/noisy_attribute_fairness_threshold_study/{}/{}/{}'.format(dirname, method, dataset,
                                                                                   wl_method, evaluator)
-                fairness_methods = [fair_method for fair_method in os.listdir(path) if os.path.isdir(os.path.join(path, fair_method))]
+                noise_models = [noise_model for noise_model in os.listdir(path) if os.path.isdir(os.path.join(path, noise_model))]
 
-                for fair_method in fairness_methods:
-                    # extract all the fairness weights that are in the directory
-                    path = '{}/../results/fairness/{}/noisy_attribute_fairness_threshold_study/{}/{}/{}/{}'.format(dirname, method, dataset,
-                                                                                         wl_method, evaluator,
-                                                                                         fair_method)
-                    fairness_thresholds = [fair_threshold for fair_threshold in os.listdir(path) if
-                                        os.path.isdir(os.path.join(path, fair_threshold))]
+                for noise_model in noise_models:
+                    path = '{}/../results/fairness/{}/noisy_attribute_fairness_threshold_study/{}/{}/{}/{}'.format(
+                        dirname, method, dataset, wl_method, evaluator, noise_model)
+                    noise_levels = [noise_level for noise_level in os.listdir(path) if
+                                    os.path.isdir(os.path.join(path, noise_level))]
 
-                    for fair_threshold in fairness_thresholds:
+                    for noise_level in noise_levels:
                         path = '{}/../results/fairness/{}/noisy_attribute_fairness_threshold_study/{}/{}/{}/{}/{}'.format(dirname, method, dataset,
-                                                                                             wl_method, evaluator,
-                                                                                             fair_method, fair_threshold)
-                        folds = [fold for fold in os.listdir(path) if os.path.isdir(os.path.join(path, fold))]
+                                                                                          wl_method, evaluator, noise_model, noise_level)
+                        fairness_methods = [fair_method for fair_method in os.listdir(path) if os.path.isdir(os.path.join(path, fair_method))]
 
-                        # calculate experiment performance and append to performance frame
-                        performance_series = calculate_experiment_performance(method, dataset, wl_method, evaluator,
-                                                                              folds, fair_method, float(fair_threshold))
-                        performance_frame = performance_frame.append(performance_series, ignore_index=True)
+                        for fair_method in fairness_methods:
+                            path = '{}/../results/fairness/{}/noisy_attribute_fairness_threshold_study/{}/{}/{}/{}/{}/{}'.format(dirname, method, dataset,
+                                                                                                 wl_method, evaluator, noise_model, noise_level, fair_method)
+                            fairness_thresholds = [fair_threshold for fair_threshold in os.listdir(path) if
+                                                os.path.isdir(os.path.join(path, fair_threshold))]
+
+                            for fair_threshold in fairness_thresholds:
+                                path = '{}/../results/fairness/{}/noisy_attribute_fairness_threshold_study/{}/{}/{}/{}/{}/{}/{}'.format(dirname, method, dataset,
+                                                                                                     wl_method, evaluator, noise_model, noise_level,
+                                                                                                     fair_method, fair_threshold)
+                                folds = [fold for fold in os.listdir(path) if os.path.isdir(os.path.join(path, fold))]
+
+                                # calculate experiment performance and append to performance frame
+                                performance_series = calculate_experiment_performance(method, dataset, wl_method, evaluator, noise_model, noise_level,
+                                                                                      folds, fair_method, float(fair_threshold))
+                                performance_frame = performance_frame.append(performance_series, ignore_index=True)
 
     # write performance_frame and timing_frame to results/fairness/{}/noisy_attribute_fairness_threshold_study
     performance_frame.to_csv(
@@ -112,7 +120,7 @@ def main():
         index=False)
 
 
-def calculate_experiment_performance(method, dataset, wl_method, evaluator, folds, model, threshold):
+def calculate_experiment_performance(method, dataset, wl_method, evaluator, noise_model, noise_level, folds, model, threshold):
     # initialize the experiment list that will be populated in the following for
     # loop with the performance outcome of each fold
     experiment_performance = np.array([])
@@ -123,9 +131,9 @@ def calculate_experiment_performance(method, dataset, wl_method, evaluator, fold
         try:
             # prediction dataframe
             if method == 'psl':
-                predicted_path = "results/fairness/psl/{}/{}/{}/{}/{}/{}/{}/inferred-predicates/{}.txt".format(
-                    "noisy_attribute_fairness_threshold_study", dataset, wl_method, evaluator, model, threshold, fold,
-                    DATASET_PROPERTIES[dataset]['evaluation_predicate'].upper())
+                predicted_path = "results/fairness/psl/{}/{}/{}/{}/{}/{}/{}/{}/{}/inferred-predicates/{}.txt".format(
+                    "noisy_attribute_fairness_threshold_study", dataset, wl_method, evaluator, noise_model, noise_level,
+                    model, threshold, fold, DATASET_PROPERTIES[dataset]['evaluation_predicate'].upper())
                 predicted_df = load_psl_prediction_frame(predicted_path)
             else:
                 raise ValueError("{} not supported. Try: ['psl', 'tuffy']".format(method))
@@ -156,6 +164,8 @@ def calculate_experiment_performance(method, dataset, wl_method, evaluator, fold
     performance_series['Dataset'] = dataset
     performance_series['Wl_Method'] = wl_method
     performance_series['Fairness_Model'] = model
+    performance_series['Noise_Model'] = noise_model
+    performance_series['Noise_Level'] = noise_level
     performance_series['Evaluation_Method'] = evaluator
     performance_series['Evaluator_Mean'] = experiment_performance.mean() * 5
     performance_series['Evaluator_Standard_Deviation'] = experiment_performance.std() * 5

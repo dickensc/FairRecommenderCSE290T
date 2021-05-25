@@ -20,6 +20,7 @@ readonly STANDARD_PSL_OPTIONS="--postgres ${POSTGRES_DB} -D log4j.threshold=TRAC
 declare -A MODEL_OPTIONS
 MODEL_OPTIONS[base]='-D sgd.maxiterations=500'
 MODEL_OPTIONS[non_parity]='-D sgd.maxiterations=1000'
+MODEL_OPTIONS[non_parity_attribute_denoised]='-D sgd.maxiterations=1000'
 MODEL_OPTIONS[value]='-D sgd.maxiterations=500'
 MODEL_OPTIONS[non_parity_value]='-D sgd.maxiterations=500'
 MODEL_OPTIONS[nb]='-D sgd.maxiterations=500'
@@ -44,7 +45,7 @@ function run() {
 function run_inference() {
     local example_name=$1
     local evaluator=$2
-    local fairness_model=$3
+    local model=$3
     local fold=$4
     local out_directory=$5
 
@@ -60,13 +61,13 @@ function run_inference() {
     reactivate_evaluation "$example_directory"
 
     # modify runscript to run with the options for this study
-    modify_run_script_options "$example_directory" "$evaluator" "$fairness_model"
+    modify_run_script_options "$example_directory" "$evaluator" "$model"
 
     # modify data files to point to the fold
     modify_data_files "$example_directory" "$fold"
 
     # modify the model file if necessary for the fairness intervention
-    modify_model_file "$example_directory" "$fairness_model" "$fold"
+    modify_model_file "$example_directory" "$model" "$fold"
 
     # set the psl version for WL experiment
     set_psl_version "$PSL_VERSION" "$example_directory"
@@ -78,7 +79,7 @@ function run_inference() {
     modify_data_files "$example_directory" 0
 
     # Copy the original model file back into the cli directory
-    cp "${BASE_EXAMPLE_DIR}/${example_name}/${example_name}_${fairness_model}/${example_name}.psl" "${cli_directory}/${example_name}.psl"
+    cp "${BASE_EXAMPLE_DIR}/${example_name}/${example_name}_${model}/${example_name}.psl" "${cli_directory}/${example_name}.psl"
 
     # reactivate weight learning step in run script
     reactivate_weight_learning "$example_directory"
@@ -195,7 +196,7 @@ function modify_model_file() {
     local example_name
     example_name=$(basename "${example_directory}")
 
-    if [[ "${fairness_metric}" == "non_parity" || "${fairness_metric}" == "non_parity_nmf_retro_fit" || ${fairness_model} == 'non_parity_value' ]]; then
+    if [[ "${fairness_metric}" == "non_parity" || "${fairness_metric}" == "non_parity_nmf_retro_fit" || ${fairness_model} == 'non_parity_value' || ${fairness_model} == 'non_parity_attribute_denoised' ]]; then
       pushd . > /dev/null
           cd "${example_directory}/cli" || exit
 
@@ -212,7 +213,7 @@ function modify_model_file() {
 
 function main() {
     if [[ $# -le 4 ]]; then
-        echo "USAGE: $0 <example_name> <evaluator> <fairness_model> <fold> <out_directory>"
+        echo "USAGE: $0 <example_name> <evaluator> <model> <fold> <out_directory>"
         echo "USAGE: Examples can be among: ${SUPPORTED_EXAMPLES}"
         exit 1
     fi

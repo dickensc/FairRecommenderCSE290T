@@ -17,16 +17,17 @@ NOISE_LEVELS['clean']='0.0'
 NOISE_LEVELS['gaussian_noise']='0.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4'
 NOISE_LEVELS['poisson_noise']='0.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4'
 NOISE_LEVELS['gender_flipping']='0.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4'
-readonly FAIRNESS_MODELS='non_parity_attribute_denoised base non_parity mutual_information mutual_information_attribute_denoised'
+#readonly FAIRNESS_MODELS='non_parity_attribute_denoised base non_parity mutual_information mutual_information_attribute_denoised'
+readonly FAIRNESS_MODELS='non_parity_attribute_denoised'
 declare -A FAIRNESS_THRESHOLDS
 FAIRNESS_THRESHOLDS['non_parity']='0.002 0.004 0.006 0.008 0.010'
-FAIRNESS_THRESHOLDS['non_parity_noise_tolerant']='0.002 0.004 0.006 0.008 0.010'
+FAIRNESS_THRESHOLDS['non_parity_attribute_denoised']='0.002 0.004 0.006 0.008 0.010'
 FAIRNESS_THRESHOLDS['mutual_information']='0.0005 0.001 0.0015 0.002 0.0025 0.003 0.0035'
 FAIRNESS_THRESHOLDS['base']='0.0'
 
 readonly DENOISED_MODELS='non_parity_attribute_denoised mutual_information_attribute_denoised'
 declare -A DENOISER_MODEL
-DENOISER_MODEL['non_parity_attribute_denoised']='movielens_attribute_noise'
+DENOISER_MODEL['non_parity_attribute_denoised']='attribute_noise'
 
 readonly WL_METHODS='UNIFORM'
 readonly SEED=22
@@ -65,14 +66,14 @@ function run_example() {
     # Setup experiment cli and data directory
     setup_fairness_experiment "${example_name}" "${fairness_model}" "${cli_directory}"
 
+    # Run denoising model
+    run_denoising_model "${example_name}" "${evaluator}" "${fairness_model}" "${noise_model}" "${noise_level}" "${fold}" "${out_directory}"
+
     # Write the fairness weight
     write_fairness_threshold "$fair_threshold" "$fairness_model" "$example_name" "$wl_method" "$cli_directory"
 
     # Write the noise threshold
     write_noise_threshold "$fair_threshold" "$fairness_model" "$example_name" "$fold" "$wl_method" "$cli_directory" "$noise_model" "$noise_level"
-
-    # Run denoising model
-    run_denoising_model "${example_name}" "${evaluator}" "${fairness_model}" "${noise_model}" "${noise_level}" "${fold}" "${out_directory}"
 
     ##### WEIGHT LEARNING #####
     run_weight_learning "${example_name}" "${evaluator}" "${wl_method}" "${fairness_model}" "${fair_threshold}" "${fold}" "${cli_directory}" "${out_directory}" ${STANDARD_OPTIONS}
@@ -95,16 +96,25 @@ function run_denoising_model() {
     if [[ "${DENOISED_MODELS}" == *"${fairness_model}"* ]]; then
       local out_path="${out_directory}/eval_denoising_out.txt"
       local err_path="${out_directory}/eval_denoising_out.err"
+      local cli_directory="${BASE_DIR}/psl-datasets/${example_name}/cli"
 
       if [[ -e "${out_path}" ]]; then
           echo "Output file already exists, skipping: ${out_path}"
       else
-          echo "Running denoising model for ${example_name} ${evaluator} ${noise_model} ${noise_level} (#${fold})."
+          echo "Running denoising model for ${example_name} ${fairness_model} ${evaluator} ${noise_model} ${noise_level} (#${fold})."
+          # Use denoising model rather than fair model
+          setup_fairness_experiment "${example_name}" "${DENOISER_MODEL[${fairness_model}]}" "${cli_directory}"
+          # Skip weight learning
+          local fairness_model_directory="${BASE_DIR}/psl-datasets/${example_name}/${example_name}_${DENOISER_MODEL[${fairness_model}]}"
+          cp "${fairness_model_directory}/${example_name}.psl" "${cli_directory}/${example_name}-learned.psl"
           # call inference script for SRL model type
           pushd . > /dev/null
               cd "psl_scripts" || exit
               ./run_inference.sh "${example_name}" "${evaluator}" "${DENOISER_MODEL[${fairness_model}]}" "${fold}" "${out_directory}" > "$out_path" 2> "$err_path"
           popd > /dev/null
+
+          # Use fair model rather than denoising model
+          setup_fairness_experiment "${example_name}" "${fairness_model}" "${cli_directory}"
       fi
 
       if [[ ${fairness_model} == 'non_parity_attribute_denoised' ]]; then

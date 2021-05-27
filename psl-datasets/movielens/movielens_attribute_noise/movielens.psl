@@ -2,10 +2,10 @@
 1.0 : group_1(U) = group_1_obs(U)^2
 1.0 : group_2(U) = group_2_obs(U)^2
 
-1.0 : group_1(U) & sim_demo_users(U1,U2) >> group_1(U)^2
-1.0 : group_1(U) & sim_users(U1,U2) >> group_1(U)^2
+0.1 : group_1(U1) & sim_demo_users(U1,U2) >> group_1(U2)^2
+0.1 : group_2(U1) & sim_demo_users(U1,U2) >> group_2(U2)^2
 
-1.0 : group_2(U) & sim_demo_users(U1,U2) >> group_2(U)^2
-1.0 : group_2(U) & sim_users(U1,U2) >> group_2(U)^2
+0.1 : group_2(U1) & sim_users(U1,U2) >> group_2(U2)^2
+0.1 : group_1(U1) & sim_users(U1,U2) >> group_1(U2)^2
 
 group_1(U) + group_2(U) = 1 .

@@ -11,3 +11,4 @@ def group_1(user_df, fold='0', phase='eval'):
     group_member_df = user_df.loc[:, ['gender']]
     group_member_df.loc[:, 'value'] = 1
     write(group_member_df[group_member_df.gender == 'F'].value, 'group_1_obs', fold, phase)
+    write(group_member_df.value, 'group_1_targets', fold, phase)

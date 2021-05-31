@@ -122,22 +122,22 @@ def write_predicates(observed_ratings_df, truth_ratings_df, gaussian_corrupted_r
 
     for noise_level in NOISE_LEVELS["gaussian_noise"]:
         ratings_predicate(gaussian_corrupted_ratings_dfs[noise_level].loc[observed_ratings_df.index],
-                          partition='obs', fold=str(fold), phase="{}/{}/{}".format(phase, "gaussian_noise", noise_level))
+                          partition='obs', fold=str(fold), phase="{}/{}/{}".format(phase, "label_gaussian_noise", noise_level))
         ratings_predicate(gaussian_corrupted_ratings_dfs[noise_level].loc[truth_ratings_df.index],
-                          partition='targets', fold=str(fold), phase="{}/{}/{}".format(phase, "gaussian_noise", noise_level),
+                          partition='targets', fold=str(fold), phase="{}/{}/{}".format(phase, "label_gaussian_noise", noise_level),
                           write_value=False)
         ratings_predicate(gaussian_corrupted_ratings_dfs[noise_level].loc[truth_ratings_df.index],
-                          partition='truth', fold=str(fold), phase="{}/{}/{}".format(phase, "gaussian_noise", noise_level),
+                          partition='truth', fold=str(fold), phase="{}/{}/{}".format(phase, "label_gaussian_noise", noise_level),
                           write_value=True)
 
     for noise_level in NOISE_LEVELS["poisson_noise"]:
         ratings_predicate(poisson_corrupted_ratings_dfs[noise_level].loc[observed_ratings_df.index],
-                          partition='obs', fold=str(fold), phase="{}/{}/{}".format(phase, "poisson_noise", noise_level))
+                          partition='obs', fold=str(fold), phase="{}/{}/{}".format(phase, "label_poisson_noise", noise_level))
         ratings_predicate(poisson_corrupted_ratings_dfs[noise_level].loc[truth_ratings_df.index],
-                          partition='targets', fold=str(fold), phase="{}/{}/{}".format(phase, "poisson_noise", noise_level),
+                          partition='targets', fold=str(fold), phase="{}/{}/{}".format(phase, "label_poisson_noise", noise_level),
                           write_value=False)
         ratings_predicate(poisson_corrupted_ratings_dfs[noise_level].loc[truth_ratings_df.index],
-                          partition='truth', fold=str(fold), phase="{}/{}/{}".format(phase, "poisson_noise", noise_level),
+                          partition='truth', fold=str(fold), phase="{}/{}/{}".format(phase, "label_poisson_noise", noise_level),
                           write_value=True)
 
     # Local Predictors
@@ -148,24 +148,24 @@ def write_predicates(observed_ratings_df, truth_ratings_df, gaussian_corrupted_r
     for noise_level in NOISE_LEVELS["gaussian_noise"]:
         nmf_ratings_predicate(gaussian_corrupted_ratings_dfs[noise_level].loc[observed_ratings_df.index],
                               truth_ratings_df, fold=str(fold),
-                              phase="{}/{}/{}".format(phase, "gaussian_noise", noise_level))
+                              phase="{}/{}/{}".format(phase, "label_gaussian_noise", noise_level))
         svd_ratings_predicate(gaussian_corrupted_ratings_dfs[noise_level].loc[observed_ratings_df.index],
                               truth_ratings_df, fold=str(fold),
-                              phase="{}/{}/{}".format(phase, "gaussian_noise", noise_level))
+                              phase="{}/{}/{}".format(phase, "label_gaussian_noise", noise_level))
         nb_ratings_predicate(gaussian_corrupted_ratings_dfs[noise_level].loc[observed_ratings_df.index],
                              truth_ratings_df, user_df, movies_df, fold=str(fold),
-                             phase="{}/{}/{}".format(phase, "gaussian_noise", noise_level))
+                             phase="{}/{}/{}".format(phase, "label_gaussian_noise", noise_level))
 
     for noise_level in NOISE_LEVELS["poisson_noise"]:
         nmf_ratings_predicate(poisson_corrupted_ratings_dfs[noise_level].loc[observed_ratings_df.index],
                               truth_ratings_df, fold=str(fold),
-                              phase="{}/{}/{}".format(phase, "poisson_noise", noise_level))
+                              phase="{}/{}/{}".format(phase, "label_poisson_noise", noise_level))
         svd_ratings_predicate(poisson_corrupted_ratings_dfs[noise_level].loc[observed_ratings_df.index],
                               truth_ratings_df, fold=str(fold),
-                              phase="{}/{}/{}".format(phase, "poisson_noise", noise_level))
+                              phase="{}/{}/{}".format(phase, "label_poisson_noise", noise_level))
         nb_ratings_predicate(poisson_corrupted_ratings_dfs[noise_level].loc[observed_ratings_df.index],
                              truth_ratings_df, user_df, movies_df, fold=str(fold),
-                             phase="{}/{}/{}".format(phase, "poisson_noise", noise_level))
+                             phase="{}/{}/{}".format(phase, "label_poisson_noise", noise_level))
 
     for noise_level in NOISE_LEVELS["gender_flipping"]:
         nb_ratings_predicate(observed_ratings_df, truth_ratings_df,
@@ -178,15 +178,15 @@ def write_predicates(observed_ratings_df, truth_ratings_df, gaussian_corrupted_r
     average_user_rating_predicate(observed_ratings_df, fold=str(fold), phase=phase)
     for noise_level in NOISE_LEVELS["gaussian_noise"]:
         average_item_rating_predicate(gaussian_corrupted_ratings_dfs[noise_level].loc[observed_ratings_df.index],
-                                      fold=str(fold), phase="{}/{}/{}".format(phase, "gaussian_noise", noise_level))
+                                      fold=str(fold), phase="{}/{}/{}".format(phase, "label_gaussian_noise", noise_level))
         average_user_rating_predicate(gaussian_corrupted_ratings_dfs[noise_level].loc[observed_ratings_df.index],
-                                      fold=str(fold), phase="{}/{}/{}".format(phase, "gaussian_noise", noise_level))
+                                      fold=str(fold), phase="{}/{}/{}".format(phase, "label_gaussian_noise", noise_level))
 
     for noise_level in NOISE_LEVELS["poisson_noise"]:
         average_item_rating_predicate(poisson_corrupted_ratings_dfs[noise_level].loc[observed_ratings_df.index],
-                                      fold=str(fold), phase="{}/{}/{}".format(phase, "poisson_noise", noise_level))
+                                      fold=str(fold), phase="{}/{}/{}".format(phase, "label_poisson_noise", noise_level))
         average_user_rating_predicate(poisson_corrupted_ratings_dfs[noise_level].loc[observed_ratings_df.index],
-                                      fold=str(fold), phase="{}/{}/{}".format(phase, "poisson_noise", noise_level))
+                                      fold=str(fold), phase="{}/{}/{}".format(phase, "label_poisson_noise", noise_level))
 
     # Similarity
     sim_content_predicate(movies_df, fold=str(fold), phase=phase)
@@ -200,15 +200,15 @@ def write_predicates(observed_ratings_df, truth_ratings_df, gaussian_corrupted_r
     sim_users_predicate(observed_ratings_df, users, fold=str(fold), phase=phase)
     for noise_level in NOISE_LEVELS["gaussian_noise"]:
         sim_items_predicate(gaussian_corrupted_ratings_dfs[noise_level].loc[observed_ratings_df.index], movies,
-                            fold=str(fold), phase="{}/{}/{}".format(phase, "gaussian_noise", noise_level))
+                            fold=str(fold), phase="{}/{}/{}".format(phase, "label_gaussian_noise", noise_level))
         sim_users_predicate(gaussian_corrupted_ratings_dfs[noise_level].loc[observed_ratings_df.index], users,
-                            fold=str(fold), phase="{}/{}/{}".format(phase, "gaussian_noise", noise_level))
+                            fold=str(fold), phase="{}/{}/{}".format(phase, "label_gaussian_noise", noise_level))
 
     for noise_level in NOISE_LEVELS["poisson_noise"]:
         sim_items_predicate(poisson_corrupted_ratings_dfs[noise_level].loc[observed_ratings_df.index], movies,
-                            fold=str(fold), phase="{}/{}/{}".format(phase, "poisson_noise", noise_level))
+                            fold=str(fold), phase="{}/{}/{}".format(phase, "label_poisson_noise", noise_level))
         sim_users_predicate(poisson_corrupted_ratings_dfs[noise_level].loc[observed_ratings_df.index], users,
-                            fold=str(fold), phase="{}/{}/{}".format(phase, "poisson_noise", noise_level))
+                            fold=str(fold), phase="{}/{}/{}".format(phase, "label_poisson_noise", noise_level))
 
     # Scoping and Coarse Blocking
     item_predicate(observed_ratings_df, truth_ratings_df, fold=str(fold), phase=phase)
@@ -245,12 +245,12 @@ def write_predicates(observed_ratings_df, truth_ratings_df, gaussian_corrupted_r
     for noise_level in NOISE_LEVELS["gaussian_noise"]:
         group_average_item_rating_predicate(gaussian_corrupted_ratings_dfs[noise_level].loc[observed_ratings_df.index],
                                             user_df, movies_df, fold=str(fold),
-                                            phase="{}/{}/{}".format(phase, "gaussian_noise", noise_level))
+                                            phase="{}/{}/{}".format(phase, "label_gaussian_noise", noise_level))
 
     for noise_level in NOISE_LEVELS["poisson_noise"]:
         group_average_item_rating_predicate(poisson_corrupted_ratings_dfs[noise_level].loc[observed_ratings_df.index],
                                             user_df, movies_df, fold=str(fold),
-                                            phase="{}/{}/{}".format(phase, "poisson_noise", noise_level))
+                                            phase="{}/{}/{}".format(phase, "label_poisson_noise", noise_level))
 
     for noise_level in NOISE_LEVELS["gender_flipping"]:
         group_average_item_rating_predicate(observed_ratings_df, gender_flipping_user_dfs[noise_level].loc[user_df.index],
@@ -390,7 +390,7 @@ def load_dataframes():
     gaussian_corrupted_ratings_dfs = {}
     for noise_level in NOISE_LEVELS["gaussian_noise"]:
         gaussian_corrupted_ratings_dfs[noise_level] = pd.read_csv(
-            DATA_PATH + '/ml-1m_gaussian_noise/{}/ratings.dat'.format(noise_level), sep='::', header=None, engine='python')
+            DATA_PATH + '/ml-1m_label_gaussian_noise/{}/ratings.dat'.format(noise_level), sep='::', header=None, engine='python')
         gaussian_corrupted_ratings_dfs[noise_level].columns = ['userId', 'movieId', 'rating', 'timestamp']
         gaussian_corrupted_ratings_dfs[noise_level] = gaussian_corrupted_ratings_dfs[noise_level].astype({'userId': int, 'movieId': int})
         gaussian_corrupted_ratings_dfs[noise_level].rating = (
@@ -400,7 +400,7 @@ def load_dataframes():
     poisson_corrupted_ratings_dfs = {}
     for noise_level in NOISE_LEVELS["poisson_noise"]:
         poisson_corrupted_ratings_dfs[noise_level] = pd.read_csv(
-            DATA_PATH + '/ml-1m_poisson_noise/{}/ratings.dat'.format(noise_level), sep='::', header=None, engine='python')
+            DATA_PATH + '/ml-1m_label_poisson_noise/{}/ratings.dat'.format(noise_level), sep='::', header=None, engine='python')
         poisson_corrupted_ratings_dfs[noise_level].columns = ['userId', 'movieId', 'rating', 'timestamp']
         poisson_corrupted_ratings_dfs[noise_level] = poisson_corrupted_ratings_dfs[noise_level].astype({'userId': int, 'movieId': int})
         poisson_corrupted_ratings_dfs[noise_level].rating = (

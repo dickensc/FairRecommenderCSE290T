@@ -11,7 +11,7 @@ readonly STUDY_NAME='noisy_attribute_fairness_threshold_study'
 readonly SUPPORTED_DATASETS='movielens'
 readonly SUPPORTED_FAIRNESS_MODELS='base non_parity_attribute_denoised non_parity mutual_information'
 
-readonly NOISE_MODELS='gaussian_noise poisson_noise gender_flipping clean'
+readonly NOISE_MODELS='label_gaussian_noise label_poisson_noise gender_flipping clean'
 declare -A NOISE_LEVELS
 NOISE_LEVELS['clean']='0.0'
 NOISE_LEVELS['gaussian_noise']='0.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4'

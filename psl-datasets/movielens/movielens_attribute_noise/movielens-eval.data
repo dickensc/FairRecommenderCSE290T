@@ -14,9 +14,5 @@ observations:
     group_1_obs: ../data/movielens/0/eval/group_2_obs.txt
 
 targets:
-    group_1: ../data/movielens/0/eval/group_1_obs.txt
-    group_2: ../data/movielens/0/eval/group_2_obs.txt
-
-truth:
-    group_1: ../data/movielens/0/eval/group_1_obs.txt
-    group_2: ../data/movielens/0/eval/group_2_obs.txt
+    group_1: ../data/movielens/0/eval/group_1_targets.txt
+    group_2: ../data/movielens/0/eval/group_2_targets.txt

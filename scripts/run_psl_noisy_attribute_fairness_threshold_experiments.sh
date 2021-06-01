@@ -107,7 +107,7 @@ function run_denoising_model() {
           # Skip weight learning
           local fairness_model_directory="${BASE_DIR}/psl-datasets/${example_name}/${example_name}_${DENOISER_MODEL[${fairness_model}]}"
           cp "${fairness_model_directory}/${example_name}.psl" "${cli_directory}/${example_name}-learned.psl"
-          # call inference script for SRL model type
+          # Call inference script for SRL model type
           pushd . > /dev/null
               cd "psl_scripts" || exit
               ./run_inference.sh "${example_name}" "${evaluator}" "${DENOISER_MODEL[${fairness_model}]}" "${fold}" "${out_directory}" > "$out_path" 2> "$err_path"

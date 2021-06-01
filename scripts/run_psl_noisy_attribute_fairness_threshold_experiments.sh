@@ -73,7 +73,7 @@ function run_example() {
     write_fairness_threshold "$fair_threshold" "$fairness_model" "$example_name" "$wl_method" "$cli_directory"
 
     # Write the noise threshold
-    write_noise_threshold "$fair_threshold" "$fairness_model" "$example_name" "$fold" "$wl_method" "$cli_directory" "$noise_model" "$noise_level"
+    write_noise_threshold "$example_name" "$fold" "$wl_method" "$cli_directory" "$noise_model" "$noise_level"
 
     ##### WEIGHT LEARNING #####
     run_weight_learning "${example_name}" "${evaluator}" "${wl_method}" "${fairness_model}" "${fair_threshold}" "${fold}" "${cli_directory}" "${out_directory}" ${STANDARD_OPTIONS}
@@ -107,6 +107,8 @@ function run_denoising_model() {
           # Skip weight learning
           local fairness_model_directory="${BASE_DIR}/psl-datasets/${example_name}/${example_name}_${DENOISER_MODEL[${fairness_model}]}"
           cp "${fairness_model_directory}/${example_name}.psl" "${cli_directory}/${example_name}-learned.psl"
+          # Set data location.
+          write_noise_threshold "$example_name" "$fold" "$wl_method" "$cli_directory" "$noise_model" "$noise_level"
           # Call inference script for SRL model type
           pushd . > /dev/null
               cd "psl_scripts" || exit
@@ -242,16 +244,14 @@ function write_fairness_threshold() {
 }
 
 function write_noise_threshold() {
-    local fairness_threshold=$1
-    local fairness_model=$2
-    local example_name=$3
-    local fold=$4
-    local wl_method=$5
-    local cli_directory=$6
-    local noise_model=$7
-    local noise_level=$8
+    local example_name=$1
+    local fold=$2
+    local wl_method=$3
+    local cli_directory=$4
+    local noise_model=$5
+    local noise_level=$6
 
-    # write fairness threshold for constrarint in psl file
+    # write noise threshold for data file
     pushd . > /dev/null
         cd "${cli_directory}" || exit
 

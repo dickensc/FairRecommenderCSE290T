@@ -1,6 +1,6 @@
 // Attribute inference
-1.0 : group_1_targets(U) = group_1_obs(U)^2
-1.0 : group_2_targets(U) = group_1_obs(U)^2
+1.0 : group_1_targets(U) = group_1(U)^2
+1.0 : group_2_targets(U) = group_2(U)^2
 
 0.1 : group_1_targets(U1) & sim_demo_users(U1,U2) >> group_1_targets(U2)^2
 0.1 : group_2_targets(U1) & sim_demo_users(U1,U2) >> group_2_targets(U2)^2

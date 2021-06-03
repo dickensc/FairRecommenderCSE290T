@@ -10,8 +10,8 @@ observations:
     sim_demo_users: ../data/movielens/0/eval/sim_demo_users_obs.txt
     sim_users: ../data/movielens/0/eval/sim_users_obs.txt
 
-    group_1: ../data/movielens/0/eval/group_1_obs.txt
-    group_2: ../data/movielens/0/eval/group_2_obs.txt
+    group_1_obs: ../data/movielens/0/eval/group_1_obs.txt
+    group_1_obs: ../data/movielens/0/eval/group_2_obs.txt
 
 targets:
     group_1_targets: ../data/movielens/0/eval/group_1_targets_targets.txt

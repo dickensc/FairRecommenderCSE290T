@@ -113,7 +113,7 @@ function run_denoising_model() {
           # Call inference script for SRL model type
           pushd . > /dev/null
               cd "psl_scripts" || exit
-              ./run_inference.sh "${example_name}" "${evaluator}" "${DENOISER_MODEL[${fairness_model}]}" "${fold}" "${out_directory}" "${DENOISING_OPTIONS}"> "$out_path" 2> "$err_path"
+              ./run_inference.sh "${example_name}" "${evaluator}" "${DENOISER_MODEL[${fairness_model}]}" "${fold}" "${out_directory}" ${DENOISING_OPTIONS}> "$out_path" 2> "$err_path"
           popd > /dev/null
 
           # Use fair model rather than denoising model

@@ -128,7 +128,9 @@ function run_denoising_model() {
         pushd . > /dev/null
           cd "${cli_directory}" || exit
 
-          sed
+          sed -i -E "s|group_1_obs: ../data/${example_name}/[0-9]+/eval/group_1_obs.txt|group_1_obs: ${out_directory}/inferred-predicates/ROUNDED_GROUP_1_TARGETS.txt|g" "${example_name}"-eval.data
+          sed -i -E "s|group_2_obs: ../data/${example_name}/[0-9]+/eval/group_2_obs.txt|group_2_obs: ${out_directory}/inferred-predicates/ROUNDED_GROUP_2_TARGETS.txt|g" "${example_name}"-eval.data
+          cat "${example_name}"-eval.data
         popd > /dev/null
       fi
     fi

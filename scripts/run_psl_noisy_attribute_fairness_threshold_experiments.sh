@@ -122,7 +122,7 @@ function run_denoising_model() {
 
       if [[ ${fairness_model} == 'non_parity_attribute_denoised' ]]; then
         # Round group_1 group_2 predictions.
-        python3 ./round_group_predictions "$out_directory"
+        python3 ./round_group_predictions.py "$out_directory"
 
         # Set the denoised data
         pushd . > /dev/null

@@ -39,6 +39,7 @@ DATASET_EVALUATORS[movielens]='Continuous'
 
 readonly RELAX_MULTIPLIER='1.0'
 readonly STANDARD_OPTIONS='-D reasoner.tolerance=1.0e-15f -D sgd.learningrate=10.0 -D inference.relax.squared=false -D inference.relax.multiplier=10000.0 -D weightlearning.inference=SGDInference -D sgd.extension=ADAM -D sgd.inversescaleexp=1.5'
+readonly DENOISING_OPTIONS='-D reasoner.tolerance=1.0e-15f -D sgd.learningrate=0.1 -D inference.relax.squared=false -D inference.relax.multiplier=10000.0 -D weightlearning.inference=SGDInference -D sgd.extension=ADAM -D sgd.inversescaleexp=1.5'
 
 # Number of folds to be used for each example
 declare -A DATASET_FOLDS
@@ -112,7 +113,7 @@ function run_denoising_model() {
           # Call inference script for SRL model type
           pushd . > /dev/null
               cd "psl_scripts" || exit
-              ./run_inference.sh "${example_name}" "${evaluator}" "${DENOISER_MODEL[${fairness_model}]}" "${fold}" "${out_directory}" > "$out_path" 2> "$err_path"
+              ./run_inference.sh "${example_name}" "${evaluator}" "${DENOISER_MODEL[${fairness_model}]}" "${fold}" "${out_directory}" "${DENOISING_OPTIONS}"> "$out_path" 2> "$err_path"
           popd > /dev/null
 
           # Use fair model rather than denoising model

@@ -70,7 +70,7 @@ function run_example() {
     # Run denoising model
     run_denoising_model "${example_name}" "${evaluator}" "${fairness_model}" "${noise_model}" "${noise_level}" "${fold}" "${out_directory}"
 
-    # Write the fairness weight
+    # Write the fairness thresehold
     write_fairness_threshold "$fair_threshold" "$fairness_model" "$example_name" "$wl_method" "$cli_directory"
 
     # Write the noise threshold
@@ -122,7 +122,7 @@ function run_denoising_model() {
 
       if [[ ${fairness_model} == 'non_parity_attribute_denoised' ]]; then
         # Round group_1 group_2 predictions.
-        python3 ./round_group_predictions.py "$out_directory"
+        python3 ./round_group_predictions.py ${out_directory}
 
         # Set the denoised data
         pushd . > /dev/null

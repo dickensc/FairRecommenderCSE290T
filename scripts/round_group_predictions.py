@@ -1,4 +1,5 @@
 import sys
+import os
 import pandas as pd
 
 # First read in GROUP_1 and GROUP_2 predictions.
@@ -29,6 +30,8 @@ def _load_args(args):
     if len(args) != 2 or ({'h', 'help'} & {arg.lower().strip().replace('-', '') for arg in args}):
         print("USAGE: python3 round_group_predictions <out_directory>", file=sys.stderr)
         sys.exit(1)
+    else:
+        return args[1]
     
     
 if __name__ == '__main__':
